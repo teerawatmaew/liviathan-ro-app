@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import { Separator } from '@/components/ui/separator'
+import CountdownTimer from '@/features/centrallab/CountdownTimer'
+import BossLookup from '@/features/centrallab/BossLookup'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -31,41 +34,32 @@ function decimalToBits(decimal: number): SwitchBit[] {
 export default function CentralLabSwitchPage() {
   const [inputValue, setInputValue] = useState('')
   const [bits, setBits] = useState<SwitchBit[] | null>(null)
-  const [error, setError] = useState('')
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    const num = parseInt(inputValue, 10)
-    if (isNaN(num) || inputValue.trim() === '') {
-      setError('กรุณากรอกตัวเลขที่ถูกต้อง')
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const raw = e.target.value
+    if (raw === '') {
+      setInputValue('')
       setBits(null)
       return
     }
-    if (num < 0 || num > 255) {
-      setError('ค่าต้องอยู่ระหว่าง 0 – 255 (8-bit)')
-      setBits(null)
-      return
-    }
-    setError('')
-    setBits(decimalToBits(num))
+    const num = parseInt(raw, 10)
+    if (isNaN(num)) return
+    const clamped = Math.max(1, Math.min(255, num))
+    setInputValue(String(clamped))
+    setBits(decimalToBits(clamped))
   }
 
   function handleReset() {
     setInputValue('')
     setBits(null)
-    setError('')
   }
 
-  const decimal = bits !== null ? parseInt(inputValue, 10) : null
-  const binary = decimal !== null ? decimal.toString(2).padStart(8, '0') : null
-  const hex = decimal !== null ? decimal.toString(16).toUpperCase().padStart(2, '0') : null
-
   return (
-    <div className="p-6 max-w-2xl mx-auto space-y-6">
+    <div className="p-6 max-w-5xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Central Lab Switch</h1>
+        <h1 className="text-2xl font-bold">Central Lab Helper</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          กรอกค่าเลขฐาน 10 (0–255) เพื่อดูสถานะสวิทช์ 8 ตัว
+          เครื่องมือช่วยเล่น Central Lab
         </p>
       </div>
 
@@ -73,33 +67,27 @@ export default function CentralLabSwitchPage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">ป้อนค่าเลขฐาน 10</CardTitle>
-          <CardDescription>ค่าที่รองรับ: 0 – 255</CardDescription>
+          <CardDescription>ค่าที่รองรับ: 1 – 255</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="flex gap-3 items-end">
+          <div className="flex gap-3 items-end">
             <div className="flex-1 space-y-1.5">
               <Label htmlFor="decimal-input">Decimal Value</Label>
               <Input
                 id="decimal-input"
                 type="number"
-                min={0}
+                min={1}
                 max={255}
                 placeholder="เช่น 170"
                 value={inputValue}
-                onChange={(e) => {
-                  setInputValue(e.target.value)
-                  setError('')
-                }}
+                onChange={handleChange}
+                onWheel={(e) => e.currentTarget.blur()}
               />
-              {error && (
-                <p className="text-destructive text-xs">{error}</p>
-              )}
             </div>
-            <Button type="submit">ดูผล</Button>
             <Button type="button" variant="outline" onClick={handleReset}>
               รีเซ็ต
             </Button>
-          </form>
+          </div>
         </CardContent>
       </Card>
 
@@ -108,11 +96,6 @@ export default function CentralLabSwitchPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base">สถานะสวิทช์</CardTitle>
-            <CardDescription className="font-mono text-xs space-x-3">
-              <span>DEC: {decimal}</span>
-              <span>BIN: {binary}</span>
-              <span>HEX: 0x{hex}</span>
-            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-8 gap-3">
@@ -170,20 +153,29 @@ export default function CentralLabSwitchPage() {
               ))}
             </div>
 
-            {/* Legend */}
-            <div className="mt-6 flex gap-6 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded-sm bg-primary" />
-                <span>ON = 1 (สวิทช์ขึ้น)</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded-sm border bg-background" />
-                <span>OFF = 0 (สวิทช์ลง)</span>
-              </div>
-            </div>
           </CardContent>
         </Card>
       )}
+
+      <Separator />
+
+      {/* Phase Timers */}
+      <div>
+        <h2 className="text-lg font-semibold mb-1">Phase Timer</h2>
+        <p className="text-muted-foreground text-sm mb-4">
+          จับเวลาแต่ละ phase — เมื่อหมดเวลาจะมีเสียงแจ้งเตือน
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <CountdownTimer label="Phase 1" initialSeconds={110} />
+          <CountdownTimer label="Phase 2" initialSeconds={80} />
+          <CountdownTimer label="Phase 3" initialSeconds={140} />
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Boss Lookup */}
+      <BossLookup />
     </div>
   )
 }
