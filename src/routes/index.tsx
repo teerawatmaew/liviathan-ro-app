@@ -7,6 +7,7 @@ import GalleryPage from '@/pages/gallery/GalleryPage'
 import StatCalculatorPage from '@/pages/tools/StatCalculatorPage'
 import DamageCalculatorPage from '@/pages/tools/DamageCalculatorPage'
 import CentralLabSwitchPage from '@/pages/tools/CentralLabSwitchPage'
+import EnhancementCostPage from '@/pages/tools/EnhancementCostPage'
 import { PATHS } from './paths'
 
 export const router = createBrowserRouter([
@@ -19,6 +20,7 @@ export const router = createBrowserRouter([
       { path: PATHS.TOOLS_STAT,     element: <StatCalculatorPage /> },
       { path: PATHS.TOOLS_DAMAGE,   element: <DamageCalculatorPage /> },
       { path: PATHS.TOOLS_SWITCH,     element: <CentralLabSwitchPage /> },
+      { path: PATHS.TOOLS_ENHANCEMENT, element: <EnhancementCostPage /> },
     ],
   },
 ])

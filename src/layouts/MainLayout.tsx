@@ -1,5 +1,5 @@
 import { Outlet, NavLink } from 'react-router-dom'
-import { House, BookOpen, Image, Calculator, Swords, ToggleLeft, ChevronRight } from 'lucide-react'
+import { House, BookOpen, Image, Calculator, Swords, ToggleLeft, Gem, ChevronRight } from 'lucide-react'
 
 import {
   Sidebar,
@@ -42,6 +42,7 @@ const navSections: NavSection[] = [
       { title: 'คำนวณ Stat', url: PATHS.TOOLS_STAT, icon: Calculator },
       { title: 'คำนวณ Damage', url: PATHS.TOOLS_DAMAGE, icon: Swords },
       { title: 'Central Lab Switch', url: PATHS.TOOLS_SWITCH, icon: ToggleLeft },
+      { title: 'Enhancement Stone Cost', url: PATHS.TOOLS_ENHANCEMENT, icon: Gem },
     ],
   },
 ]
