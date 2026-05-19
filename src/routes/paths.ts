@@ -15,6 +15,7 @@ export const PATHS = {
   TOOLS_DAMAGE: '/tools/damage',
   TOOLS_CENTRAL_LAB: '/tools/central-lab-helper',
   TOOLS_ITEM_COST: '/tools/item-cost-calculator',
+  TOOLS_MP_JIGSAW: '/tools/mp-jigsaw-calculator',
 } as const
 
 export type AppPath = (typeof PATHS)[keyof typeof PATHS]
