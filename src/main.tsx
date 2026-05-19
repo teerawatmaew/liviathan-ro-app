@@ -3,6 +3,16 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 
+// Prevent mouse wheel from changing number input values
+document.addEventListener('wheel', () => {
+  if (
+    document.activeElement instanceof HTMLInputElement &&
+    document.activeElement.type === 'number'
+  ) {
+    document.activeElement.blur()
+  }
+})
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />

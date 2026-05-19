@@ -55,7 +55,7 @@ export default function MainLayout() {
         <SidebarHeader className="px-4 py-3 border-b">
           <div className="flex items-center gap-2">
             <span className="text-base font-bold tracking-tight">
-              Liviatha<span className="text-primary">N</span> RO
+              LiviathaN RO
             </span>
           </div>
         </SidebarHeader>

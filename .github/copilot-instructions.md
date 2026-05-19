@@ -74,6 +74,8 @@ src/
         # (sub-components เพิ่มที่นี่เมื่อ page ขยาย)
       item-cost-calculator/
         ItemCostCalculatorPage.tsx
+      mp-jigsaw-calculator/
+        MpJigsawCalculatorPage.tsx
       form/
         FormPage.tsx
   routes/
@@ -244,6 +246,7 @@ Remove-Item "@" -Recurse -Force
 /tools/damage       DamageCalculatorPage
 /tools/central-lab-helper   CentralLabHelperPage
 /tools/item-cost-calculator  ItemCostCalculatorPage
+/tools/mp-jigsaw-calculator  MpJigsawCalculatorPage
 ```
 
 Import `PATHS` จาก `@/routes/paths` เสมอเมื่อ navigate หรือ link
@@ -258,7 +261,7 @@ Sidebar ใน `MainLayout.tsx` แบ่งเป็น section:
 |---|---|
 | (ไม่มี label) | หน้าหลัก |
 | คอนเทนต์ | บทความ / คู่มือ, แกลเลอรี่ |
-| เครื่องมือ | คำนวณ Stat, คำนวณ Damage, Central Lab Helper, Item Cost Calculator |
+| เครื่องมือ | คำนวณ Stat, คำนวณ Damage, Central Lab Helper, Item Cost Calculator, MP Jigsaw Calculator |
 
 เมื่อเพิ่มเมนูใหม่ให้เลือก section ที่เหมาะสม หรือสร้าง section ใหม่ถ้าหมวดหมู่ต่างออกไป
 
@@ -275,6 +278,7 @@ Sidebar ใน `MainLayout.tsx` แบ่งเป็น section:
 | DamageCalculatorPage | `/tools/damage` | คำนวณ Damage |
 | CentralLabHelperPage | `/tools/central-lab-helper` | แปลงเลขฐาน 10 → bit switch (SW1–SW8) + Boss Lookup + Countdown Timer |
 | ItemCostCalculatorPage | `/tools/item-cost-calculator` | คำนวณ Zeny / วัตถุดิบในการ Enhancement |
+| MpJigsawCalculatorPage | `/tools/mp-jigsaw-calculator` | คำนวณจำนวน Jigsaw ที่ได้จาก Mystical Pass ตามเลเวลปัจจุบัน |
 
 ---
 
@@ -295,7 +299,7 @@ Sidebar ใน `MainLayout.tsx` แบ่งเป็น section:
 - **Gallery categories** + lightbox viewer
 
 ### UI / UX
-- **Dark / Light mode toggle** — Tailwind v4 รองรับ `dark:` class
+- **Dark / Light mode toggle** — เป็น dark mode ถาวรตลอด (เพิ่ม `class="dark"` ที่ `<html>` ใน index.html แล้ว) — อาจเพิ่ม toggle ในอนาคต
 - **Breadcrumb** ใน SidebarInset header
 - **Search bar** global ใน header
 - **Tooltip** บน stat labels ใน calculator
