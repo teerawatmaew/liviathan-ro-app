@@ -30,6 +30,10 @@ import {
 } from '@/features/calculator/formulas'
 import type { StatSet } from '@/types'
 
+const jobsWithStats = jobClasses.filter(
+  (j) => j.hpModifier !== undefined && j.spModifier !== undefined,
+)
+
 const statKeys: (keyof StatSet)[] = ['str', 'agi', 'vit', 'int', 'dex', 'luk']
 const statLabel: Record<keyof StatSet, string> = {
   str: 'STR',
@@ -44,10 +48,10 @@ const initialStats: StatSet = { str: 1, agi: 1, vit: 1, int: 1, dex: 1, luk: 1 }
 
 export default function StatCalculatorPage() {
   const [baseLevel, setBaseLevel] = useState(1)
-  const [jobId, setJobId] = useState(jobClasses[0].id)
+  const [jobId, setJobId] = useState(jobsWithStats[0].id)
   const [stats, setStats] = useState<StatSet>(initialStats)
 
-  const job = useMemo(() => jobClasses.find((j) => j.id === jobId)!, [jobId])
+  const job = useMemo(() => jobsWithStats.find((j) => j.id === jobId)!, [jobId])
 
   const result = useMemo(
     () => ({
@@ -71,7 +75,7 @@ export default function StatCalculatorPage() {
   function handleReset() {
     setStats(initialStats)
     setBaseLevel(1)
-    setJobId(jobClasses[0].id)
+    setJobId(jobsWithStats[0].id)
   }
 
   return (
@@ -112,7 +116,7 @@ export default function StatCalculatorPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {jobClasses.map((j) => (
+                    {jobsWithStats.map((j) => (
                       <SelectItem key={j.id} value={j.id}>
                         {j.name}
                       </SelectItem>

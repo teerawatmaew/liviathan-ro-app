@@ -1,20 +1,5 @@
 import type { JobClass } from '@/types'
-
-export const jobClasses: JobClass[] = [
-  { id: 'novice', name: 'Novice', hpModifier: 35, spModifier: 10 },
-  { id: 'swordman', name: 'Swordman', hpModifier: 55, spModifier: 10 },
-  { id: 'mage', name: 'Mage', hpModifier: 30, spModifier: 20 },
-  { id: 'archer', name: 'Archer', hpModifier: 40, spModifier: 15 },
-  { id: 'acolyte', name: 'Acolyte', hpModifier: 35, spModifier: 25 },
-  { id: 'merchant', name: 'Merchant', hpModifier: 45, spModifier: 10 },
-  { id: 'thief', name: 'Thief', hpModifier: 45, spModifier: 10 },
-  { id: 'knight', name: 'Knight', hpModifier: 77, spModifier: 10 },
-  { id: 'wizard', name: 'Wizard', hpModifier: 32, spModifier: 22 },
-  { id: 'hunter', name: 'Hunter', hpModifier: 48, spModifier: 18 },
-  { id: 'priest', name: 'Priest', hpModifier: 42, spModifier: 28 },
-  { id: 'blacksmith', name: 'Blacksmith', hpModifier: 55, spModifier: 10 },
-  { id: 'assassin', name: 'Assassin', hpModifier: 55, spModifier: 10 },
-]
+export { jobClasses } from '@/data/jobs'
 
 /**
  * Calculate HP
@@ -25,7 +10,7 @@ export function calcHP(
   vit: number,
   job: JobClass,
 ): number {
-  return Math.floor((baseLevel + vit) * (job.hpModifier + baseLevel * 0.5))
+  return Math.floor((baseLevel + vit) * ((job.hpModifier ?? 0) + baseLevel * 0.5))
 }
 
 /**
@@ -37,7 +22,7 @@ export function calcSP(
   int: number,
   job: JobClass,
 ): number {
-  return Math.floor((baseLevel + int) * (job.spModifier + baseLevel * 0.1))
+  return Math.floor((baseLevel + int) * ((job.spModifier ?? 0) + baseLevel * 0.1))
 }
 
 /** ATK = STR + (STR / 10)^2 + WeaponATK  (base, no weapon) */

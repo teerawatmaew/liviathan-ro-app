@@ -47,6 +47,16 @@ src/
   assets/            # รูปภาพ / static files
   components/
     ui/              # shadcn/ui components (Badge, Button, Card ฯลฯ)
+  data/              # ข้อมูล static ของเกม RO ที่ใช้ข้าม feature ได้
+    jobs.ts          # อาชีพทั้งหมด Class 1–4 + tier
+    elements.ts      # ตารางธาตุ Lv1–4 + getBestAttackerElements()
+    weapons.ts       # ประเภทอาวุธ + size modifier + refine bonus
+    equipment.ts     # ช่อง equipment ทั้งหมด (normal / costume / shadow)
+    cities.ts        # เมือง 34 แห่ง + 6 region
+    episodes.ts      # Episodes 12–20
+    status-effects.ts  # 25 status effects (classic + Renewal)
+    mvps.ts          # ~40 MVP boss + location, respawn, difficulty
+    refine-rates.ts  # อัตรา refine +0~+20 ทุก equip type + BSB cost
   features/          # Business logic จัดกลุ่มตามฟีเจอร์
     calculator/      # formulas.ts — ฟังก์ชันคำนวณ RO
     centrallab/      # BossLookup, CountdownTimer, types, data/
@@ -222,15 +232,102 @@ Remove-Item "@" -Recurse -Force
 - **`features/`** = reusable logic + components (ไม่ผูกกับ route)
 - **`pages/`** = page entry point ที่ใช้ features + layout
 
-### Data Layer
-ข้อมูลทั้งหมดเป็น **static TypeScript arrays/objects** ใน `data.ts` ไม่มี API call
-- Articles: `src/features/content/data.ts`
-- Bosses: `src/features/centrallab/data/bosses.ts`
-- Job Classes: `src/features/calculator/formulas.ts` (export `jobClasses`)
+---
+
+### Data Layer (3 ระดับ)
+
+```
+ข้อมูลใช้ข้าม feature  →  src/data/<name>.ts
+ข้อมูลเฉพาะ feature   →  src/features/<x>/data/<name>.ts
+ข้อมูล app (articles)  →  src/features/content/data.ts  (ยังอยู่ใน feature เพราะใช้แค่ที่เดียว)
+```
+
+#### `src/data/` — Shared Game Data (เพิ่มที่นี่เมื่อข้อมูลนั้นถูกใช้โดย ≥2 features)
+
+| ไฟล์ | เนื้อหา | exports หลัก |
+|---|---|---|
+| `jobs.ts` | อาชีพทั้งหมด Class 1–4 พร้อม tier | `jobClasses: JobClass[]` |
+| `elements.ts` | ตารางธาตุ Lv1–4 ทุกคู่ | `elementTables`, `getBestAttackerElements()` |
+| `weapons.ts` | ประเภทอาวุธ + size modifier + refine bonus | `weaponTypes: WeaponTypeData[]`, `WEAPON_REFINE_ATK`, `ARMOR_REFINE_DEF` |
+| `equipment.ts` | ช่อง equipment ทั้งหมด (normal / costume / shadow) | `equipSlots: EquipSlotData[]`, `getSlotsByCategory()` |
+| `cities.ts` | เมือง 34 แห่ง + 6 region | `cities: CityData[]`, `getCitiesByRegion()` |
+| `episodes.ts` | Episodes 12–20 | `episodes: EpisodeData[]` |
+| `status-effects.ts` | 25 status effects (classic + Renewal) | `statusEffects`, `getStatusEffectById()`, `getDebuffs()` |
+| `mvps.ts` | ~40 MVP boss พร้อม location, respawn time, difficulty | `mvps`, `getMvpsByDifficulty()`, `getMvpById()` |
+| `refine-rates.ts` | อัตรา refine +0~+20 ทุก equip type + BSB cost | `REFINE_RATES`, `BSB_COSTS`, `getRefineSuccessRate()`, `isSafeRefine()` |
+
+#### `src/features/<x>/data/` — Feature-specific Data
+
+| ไฟล์ | เนื้อหา |
+|---|---|
+| `centrallab/data/bosses.ts` | รายชื่อ boss ใน Central Lab |
+| `centrallab/data/elements.ts` | re-export จาก `@/data/elements` (ย้ายไปแล้ว) |
+
+---
+
+### วิธีเพิ่ม Shared Game Data ใหม่
+
+**Step 1** — เพิ่ม type ใน `src/types/index.ts` (ถ้าจำเป็น)
+```ts
+// src/types/index.ts
+export interface MyNewData {
+  id: string
+  name: string
+  // ...
+}
+```
+
+**Step 2** — สร้าง `src/data/<name>.ts` import type จาก `@/types`
+```ts
+// src/data/monsters.ts
+import type { MyNewData } from '@/types'
+
+export const myData: MyNewData[] = [
+  { id: 'example', name: 'Example' },
+]
+```
+
+**Step 3** — ใช้งานจากทุก feature / page โดยตรง
+```ts
+import { myData } from '@/data/monsters'
+```
+
+> ถ้าย้ายข้อมูลจาก `features/<x>/data/` มาเป็น shared ให้เปลี่ยนไฟล์เดิมเป็น re-export แทน
+> เพื่อไม่ให้ import path เดิม break:
+> ```ts
+> // src/features/centrallab/data/elements.ts
+> export { elementTables, getBestAttackerElements } from '@/data/elements'
+> ```
+
+---
 
 ### Types
 - Types ที่ใช้ข้าม feature → `src/types/index.ts`
 - Types เฉพาะ feature → ไฟล์ใน feature นั้น (เช่น `centrallab/types.ts`)
+- `centrallab/types.ts` re-export types ที่ย้ายไป `src/types/index.ts` แล้ว เพื่อ backward compat
+
+**Types ใน `src/types/index.ts` ที่มีแล้ว:**
+
+| Type / const | คำอธิบาย |
+|---|---|
+| `JobTier` | tier ของอาชีพ (`novice` / `class1` / `class2` / `trans` / `class3` / `class4`) |
+| `JobClass` | ข้อมูลอาชีพ (id, name, tier, hpModifier?, spModifier?) |
+| `ELEMENTS` + `ElementType` | ไอค์ธาตุ 10 ประเภท |
+| `ElementLevel` | 1 \| 2 \| 3 \| 4 |
+| `ElementTable` / `ElementTables` | โครงสร้างตารางธาตุ |
+| `SizeType` | `'Small'` \| `'Medium'` \| `'Large'` (ใช้กับทั้ง monster size และ weapon modifier) |
+| `RACES` + `RaceType` | เผ่า monster 10 ประเภท |
+| `WeaponLevel` | 1 \| 2 \| 3 \| 4 \| 5 (ระดับของไอเทมอาวุธ) |
+| `WeaponTypeData` | ประเภทอาวุธ + sizeModifier |
+| `EquipCategory` | `'normal'` \| `'costume'` \| `'shadow'` |
+| `EquipSlotData` | ช่อง equipment (id, name, label, category, allowCard) |
+| `CityRegion` | 6 region (`rune-midgarts` / `schwarzwald` / `arunafeltz` / `new-world` / `issgard` / `other`) |
+| `CityData` | ข้อมูลเมือง (id, name, region) |
+| `EpisodeData` | ข้อมูล episode (id, episode, sub, name) |
+| `StatusEffectData` | status effect (id, name, description, type, statResist?) |
+| `MvpDifficulty` | `'low'` \| `'medium'` \| `'mid-high'` \| `'high'` |
+| `MvpData` | ข้อมูล MVP (id, name, location, mapId, respawnMin, respawnMax, difficulty, spawnType) |
+| `RefineEquipType` | `'weapon_lv1'`–`'weapon_lv5'` \| `'armor_lv1'` \| `'armor_lv2'` \| `'shadow'` |
 
 ---
 
@@ -314,6 +411,7 @@ Sidebar ใน `MainLayout.tsx` แบ่งเป็น section:
 
 ```ts
 @/components  → src/components
+@/data        → src/data
 @/features    → src/features
 @/hooks       → src/hooks
 @/layouts     → src/layouts
@@ -323,7 +421,7 @@ Sidebar ใน `MainLayout.tsx` แบ่งเป็น section:
 @/types       → src/types
 ```
 
-กำหนดใน `tsconfig.app.json` → `compilerOptions.paths`
+ทุก path แบบ `@/*` → `src/*` ทั้งหมด — กำหนดใน `tsconfig.app.json` → `compilerOptions.paths`
 
 ---
 

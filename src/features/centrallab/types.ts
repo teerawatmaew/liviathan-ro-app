@@ -1,41 +1,10 @@
 // ─── Element ──────────────────────────────────────────────────────────────────
+// Types moved to src/types/index.ts — imported for internal use + re-exported for backward compat
+import type { ElementType, ElementLevel, RaceType, SizeType } from '@/types'
+export type { ELEMENTS, ElementType, ElementLevel, ElementTable, ElementTables } from '@/types'
 
-export const ELEMENTS = [
-  'Neutral',
-  'Water',
-  'Earth',
-  'Fire',
-  'Wind',
-  'Poison',
-  'Holy',
-  'Shadow',
-  'Ghost',
-  'Undead',
-] as const
-
-export type ElementType = (typeof ELEMENTS)[number]
-export type ElementLevel = 1 | 2 | 3 | 4
-
-// ─── Race ─────────────────────────────────────────────────────────────────────
-
-export const RACES = [
-  'Angel',
-  'Brute',
-  'Demi-Human',
-  'Demon',
-  'Dragon',
-  'Fish',
-  'Formless',
-  'Insect',
-  'Plant',
-  'Undead',
-] as const
-
-export type RaceType = (typeof RACES)[number]
-
-// ─── Size ─────────────────────────────────────────────────────────────────────
-
-export type SizeType = 'Small' | 'Medium' | 'Large'
+// ─── Race & Size ──────────────────────────────────────────────────────────────
+export type { RACES, RaceType, SizeType } from '@/types'
 
 // ─── Stage ────────────────────────────────────────────────────────────────────
 
@@ -63,13 +32,4 @@ export interface Boss {
 }
 
 // ─── ElementTable ─────────────────────────────────────────────────────────────
-
-/**
- * elementTables[level][defenderElement][attackerElement] = damage %
- *
- * Row  → defender element
- * Col  → attacker element
- * Source: https://irowiki.org/wiki/Elements
- */
-export type ElementTable = Record<ElementType, Record<ElementType, number>>
-export type ElementTables = Record<ElementLevel, ElementTable>
+// (ElementTable and ElementTables types moved to src/types/index.ts)
