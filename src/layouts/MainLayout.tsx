@@ -1,5 +1,5 @@
 import { Outlet, NavLink } from 'react-router-dom'
-import { House, BookOpen, Image, Calculator, Swords, ToggleLeft, Gem, Puzzle, ChevronRight, Sparkles } from 'lucide-react'
+import { House, BookOpen, Image, Calculator, Swords, ToggleLeft, Gem, Puzzle, Hammer, ChevronRight, Sparkles } from 'lucide-react'
 
 import {
   Sidebar,
@@ -44,6 +44,7 @@ const navSections: NavSection[] = [
       { title: 'Central Lab Helper', url: PATHS.TOOLS_CENTRAL_LAB, icon: ToggleLeft },
       { title: 'Item Cost Calculator', url: PATHS.TOOLS_ITEM_COST, icon: Gem },
       { title: 'MP Jigsaw Calculator', url: PATHS.TOOLS_MP_JIGSAW, icon: Puzzle },
+      { title: 'Refine Simulator', url: PATHS.TOOLS_REFINE_SIMULATOR, icon: Hammer },
     ],
   },
 ]

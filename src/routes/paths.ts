@@ -16,6 +16,7 @@ export const PATHS = {
   TOOLS_CENTRAL_LAB: '/tools/central-lab-helper',
   TOOLS_ITEM_COST: '/tools/item-cost-calculator',
   TOOLS_MP_JIGSAW: '/tools/mp-jigsaw-calculator',
+  TOOLS_REFINE_SIMULATOR: '/tools/refine-simulator',
   // Misc
   COMING_SOON: '/coming-soon',
 } as const
