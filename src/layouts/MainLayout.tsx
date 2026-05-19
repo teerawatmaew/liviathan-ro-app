@@ -1,5 +1,5 @@
 import { Outlet, NavLink } from 'react-router-dom'
-import { House, BookOpen, Image, Calculator, Swords, ToggleLeft, Gem, Puzzle, ChevronRight } from 'lucide-react'
+import { House, BookOpen, Image, Calculator, Swords, ToggleLeft, Gem, Puzzle, ChevronRight, Sparkles } from 'lucide-react'
 
 import {
   Sidebar,
@@ -92,6 +92,27 @@ export default function MainLayout() {
               </SidebarGroupContent>
             </SidebarGroup>
           ))}
+          <SidebarGroup className="mt-auto">
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink to={PATHS.COMING_SOON}>
+                      {({ isActive }) => (
+                        <>
+                          <Sparkles className="size-4" />
+                          <span>Coming Soon</span>
+                          {isActive && (
+                            <ChevronRight className="ml-auto size-3 opacity-50" />
+                          )}
+                        </>
+                      )}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
         </SidebarContent>
 
         <SidebarFooter className="px-4 py-3 text-xs text-muted-foreground border-t">

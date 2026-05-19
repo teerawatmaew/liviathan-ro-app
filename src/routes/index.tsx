@@ -9,6 +9,7 @@ import DamageCalculatorPage from '@/pages/tools/damage/DamageCalculatorPage'
 import CentralLabHelperPage from '@/pages/tools/central-lab-helper/CentralLabHelperPage'
 import ItemCostCalculatorPage from '@/pages/tools/item-cost-calculator/ItemCostCalculatorPage'
 import MpJigsawCalculatorPage from '@/pages/tools/mp-jigsaw-calculator/MpJigsawCalculatorPage'
+import ComingSoonPage from '@/pages/coming-soon/ComingSoonPage'
 import { PATHS } from './paths'
 
 export const router = createBrowserRouter([
@@ -23,6 +24,7 @@ export const router = createBrowserRouter([
       { path: PATHS.TOOLS_CENTRAL_LAB,  element: <CentralLabHelperPage /> },
       { path: PATHS.TOOLS_ITEM_COST,       element: <ItemCostCalculatorPage /> },
       { path: PATHS.TOOLS_MP_JIGSAW,        element: <MpJigsawCalculatorPage /> },
+      { path: PATHS.COMING_SOON,            element: <ComingSoonPage /> },
     ],
   },
 ])
