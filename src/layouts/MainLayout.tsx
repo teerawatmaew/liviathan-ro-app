@@ -41,8 +41,8 @@ const navSections: NavSection[] = [
     items: [
       { title: 'คำนวณ Stat', url: PATHS.TOOLS_STAT, icon: Calculator },
       { title: 'คำนวณ Damage', url: PATHS.TOOLS_DAMAGE, icon: Swords },
-      { title: 'Central Lab Switch', url: PATHS.TOOLS_SWITCH, icon: ToggleLeft },
-      { title: 'Enhancement Stone Cost', url: PATHS.TOOLS_ENHANCEMENT, icon: Gem },
+      { title: 'Central Lab Helper', url: PATHS.TOOLS_CENTRAL_LAB, icon: ToggleLeft },
+      { title: 'Item Cost Calculator', url: PATHS.TOOLS_ITEM_COST, icon: Gem },
     ],
   },
 ]

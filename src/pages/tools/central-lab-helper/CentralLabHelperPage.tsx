@@ -31,7 +31,7 @@ function decimalToBits(decimal: number): SwitchBit[] {
   })
 }
 
-export default function CentralLabSwitchPage() {
+export default function CentralLabHelperPage() {
   const [inputValue, setInputValue] = useState('')
   const [bits, setBits] = useState<SwitchBit[] | null>(null)
 

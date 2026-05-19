@@ -196,7 +196,7 @@ function calcGradeItemCost(
 
 let _uid = 1
 
-export default function EnhancementCostPage() {
+export default function ItemCostCalculatorPage() {
   const [section, setSection] = useState<'reform' | 'grade'>('reform')
 
   // ── Reform & Craft state ─────────────────────────────────────────────────
