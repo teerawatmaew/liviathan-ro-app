@@ -3,7 +3,7 @@ export const BOXES = [
     id: 1,
     label: 'Box 1',
     color: 'bg-amber-800',
-    fromFirst100: 31,
+    fromFirst100: 32,
     levelPerBox: 7,
     specialLevel: 350,
     jigsawPerBox: 2,
@@ -12,7 +12,7 @@ export const BOXES = [
     id: 2,
     label: 'Box 2',
     color: 'bg-blue-700',
-    fromFirst100: 11,
+    fromFirst100: 13,
     levelPerBox: 19,
     specialLevel: 800,
     jigsawPerBox: 3,
@@ -26,6 +26,24 @@ export const BOXES = [
     specialLevel: 1500,
     jigsawPerBox: 5,
   },
+  {
+    id: 4,
+    label: 'Start Premium Jigsaw',
+    color: 'bg-gray-500',
+    fromFirst100: 1,
+    levelPerBox: Infinity,
+    specialLevel: Infinity,
+    jigsawPerBox: 10,
+  },
+  {
+    id: 5,
+    label: 'Bonus Jigsaw',
+    color: 'bg-pink-500',
+    fromFirst100: 5,
+    levelPerBox: Infinity,
+    specialLevel: Infinity,
+    jigsawPerBox: 3,
+  }
 ] as const
 
 export type BoxConfig = (typeof BOXES)[number]
