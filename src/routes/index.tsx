@@ -11,11 +11,14 @@ import ItemCostCalculatorPage from '@/pages/tools/item-cost-calculator/ItemCostC
 import MpJigsawCalculatorPage from '@/pages/tools/mp-jigsaw-calculator/MpJigsawCalculatorPage'
 import RefineSimulatorPage from '@/pages/tools/refine-simulator/RefineSimulatorPage'
 import ComingSoonPage from '@/pages/coming-soon/ComingSoonPage'
+import NotFoundPage from '@/pages/not-found/NotFoundPage'
+import ErrorPage from '@/pages/error/ErrorPage'
 import { PATHS } from './paths'
 
 export const router = createBrowserRouter([
   {
     element: <MainLayout />,
+    errorElement: <ErrorPage />,
     children: [
       { path: PATHS.HOME,           element: <HomePage /> },
       { path: PATHS.CONTENT,        element: <ContentPage /> },
@@ -27,6 +30,7 @@ export const router = createBrowserRouter([
       { path: PATHS.TOOLS_MP_JIGSAW,        element: <MpJigsawCalculatorPage /> },
       { path: PATHS.TOOLS_REFINE_SIMULATOR,    element: <RefineSimulatorPage /> },
       { path: PATHS.COMING_SOON,            element: <ComingSoonPage /> },
+      { path: '*',                          element: <NotFoundPage /> },
     ],
   },
 ])

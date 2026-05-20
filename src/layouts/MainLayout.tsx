@@ -1,5 +1,6 @@
 import { Outlet, NavLink } from 'react-router-dom'
-import { House, BookOpen, Image, Calculator, Swords, ToggleLeft, Gem, Puzzle, Hammer, ChevronRight, Sparkles } from 'lucide-react'
+import { House, BookOpen, Image, Swords, ToggleLeft, Gem, Puzzle, Hammer, ChevronRight, Sparkles } from 'lucide-react'
+import DonateButton from '@/layouts/DonateButton'
 
 import {
   Sidebar,
@@ -39,7 +40,6 @@ const navSections: NavSection[] = [
   {
     label: 'เครื่องมือ',
     items: [
-      { title: 'คำนวณ Stat', url: PATHS.TOOLS_STAT, icon: Calculator },
       { title: 'คำนวณ Damage', url: PATHS.TOOLS_DAMAGE, icon: Swords },
       { title: 'Central Lab Helper', url: PATHS.TOOLS_CENTRAL_LAB, icon: ToggleLeft },
       { title: 'Item Cost Calculator', url: PATHS.TOOLS_ITEM_COST, icon: Gem },
@@ -54,7 +54,12 @@ export default function MainLayout() {
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader className="px-4 py-3 border-b">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
+            <img
+              src="/images/logo/LVT.png"
+              alt="LiviathaN RO"
+              className="size-7 shrink-0"
+            />
             <span className="text-base font-bold tracking-tight">
               LiviathaN RO
             </span>
@@ -126,6 +131,9 @@ export default function MainLayout() {
           <SidebarTrigger />
           <div className="w-px h-4 bg-border" />
           <span className="text-sm font-medium text-muted-foreground">LiviathaN RO</span>
+          <div className="ml-auto">
+            <DonateButton />
+          </div>
         </header>
         <main className="flex-1 min-h-0">
           <Outlet />
