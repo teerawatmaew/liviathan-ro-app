@@ -195,4 +195,5 @@ export type RefineEquipType =
   | 'weapon_lv5'
   | 'armor_lv1'
   | 'armor_lv2'
-  | 'shadow'
+  | 'shadow_weapon'
+  | 'shadow_armor'

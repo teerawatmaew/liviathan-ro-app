@@ -11,11 +11,12 @@ import {
 } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { RefreshCw, Play, StepForward, Shield, Hammer } from 'lucide-react'
+import { RefreshCw, Play, StepForward, Shield, Hammer, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 import type { RefineEquipType } from '@/types'
-import { REFINE_RATES, BSB_COSTS, getRefineSuccessRate } from '@/data/refine-rates'
+import { REFINE_RATES, BSB_COSTS, BSB_EVENT_COSTS, getRefineSuccessRate } from '@/data/refine-rates'
+import { getOreName, rollOne } from './refineSimulatorLogic'
 import RefineHistoryTable from './RefineHistoryTable'
 
 export interface SimAttempt {
@@ -37,29 +38,9 @@ const EQUIP_TYPE_OPTIONS: { value: RefineEquipType; label: string }[] = [
   { value: 'weapon_lv5', label: 'อาวุธ Lv.5 (Etherdeocon)' },
   { value: 'armor_lv1', label: 'เกราะ Lv.1 (Elunium)' },
   { value: 'armor_lv2', label: 'เกราะ Lv.2 (Ethernium)' },
-  { value: 'shadow', label: 'Shadow Gear (Shadow Orb)' },
+  { value: 'shadow_weapon', label: 'Shadow อาวุธ (Oridecon)' },
+  { value: 'shadow_armor', label: 'Shadow เกราะ (Elunium)' },
 ]
-
-function getOreName(
-  equipType: RefineEquipType,
-  fromLevel: number,
-  oreType: 'normal' | 'enrichedHd',
-): string {
-  const isHigh = fromLevel >= 10
-  if (oreType === 'normal') {
-    if (equipType === 'weapon_lv5') return 'Etherdeocon'
-    if (equipType === 'armor_lv2') return 'Ethernium'
-    if (equipType === 'shadow') return 'Shadow Orb'
-    if (equipType === 'armor_lv1') return isHigh ? 'Carnium' : 'Elunium'
-    return isHigh ? 'Bradium' : 'Oridecon'
-  } else {
-    if (equipType === 'weapon_lv5') return 'HD Ether Bradium'
-    if (equipType === 'armor_lv2') return 'HD Ether Carnium'
-    if (equipType === 'shadow') return 'Shadow Crystal'
-    if (equipType === 'armor_lv1') return isHigh ? 'HD Carnium' : 'Enriched Elunium'
-    return isHigh ? 'HD Bradium' : 'Enriched Oridecon'
-  }
-}
 
 function StatTile({
   label,
@@ -100,13 +81,15 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
   const [targetLevel, setTargetLevel] = useState(10)
   const [noBreak, setNoBreak] = useState(false)
   const [noLevelLoss, setNoLevelLoss] = useState(false)
+  const [useEventBsb, setUseEventBsb] = useState(false)
 
   // ── Simulation State ──────────────────────────────────────────────────────
   const [currentLevel, setCurrentLevel] = useState(0)
   const [attempts, setAttempts] = useState<SimAttempt[]>([])
   const [isBroken, setIsBroken] = useState(false)
   const [counter, setCounter] = useState(0)
-  const [lastResult, setLastResult] = useState<'success' | 'fail' | 'break' | null>(null)
+  const [lastResult, setLastResult] = useState<'success' | 'fail' | 'break' | 'limit' | 'ether_pause' | null>(null)
+  const [lastRunLimit, setLastRunLimit] = useState<number | null>(null)
 
   // ── Derived ───────────────────────────────────────────────────────────────
   const rateData = REFINE_RATES[equipType]
@@ -120,19 +103,22 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
   const nextRate =
     canAttempt ? (getRefineSuccessRate(equipType, currentLevel, oreType) ?? null) : null
 
-  const stats = useMemo(() => {
-    const total = attempts.length
-    const successCount = attempts.filter((a) => a.success).length
-    const failCount = total - successCount
-    const breakCount = attempts.filter((a) => a.broke).length
-    const totalBsb = attempts.reduce((sum, a) => sum + a.bsbUsed, 0)
-    const rate = total > 0 ? ((successCount / total) * 100).toFixed(1) : '0.0'
-    const oreBreakdown = attempts.reduce<Record<string, number>>((acc, a) => {
-      acc[a.oreName] = (acc[a.oreName] ?? 0) + 1
-      return acc
-    }, {})
-    return { total, successCount, failCount, breakCount, totalBsb, rate, oreBreakdown }
-  }, [attempts])
+  const [totalStats, setTotalStats] = useState({
+    total: 0,
+    successCount: 0,
+    failCount: 0,
+    breakCount: 0,
+    totalBsb: 0,
+    oreBreakdown: {} as Record<string, number>,
+  })
+
+  const stats = {
+    ...totalStats,
+    rate:
+      totalStats.total > 0
+        ? ((totalStats.successCount / totalStats.total) * 100).toFixed(1)
+        : '0.0',
+  }
 
   const rateTableData = useMemo(() => {
     return Array.from({ length: maxLevel }, (_, i) => ({
@@ -144,52 +130,12 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
     }))
   }, [maxLevel, safetyLevel, rateData])
 
-  // ── Core Roll Function ────────────────────────────────────────────────────
-  function rollOne(lvl: number) {
-    const rate = getRefineSuccessRate(equipType, lvl, oreType) ?? 100
-    const success = Math.random() * 100 < rate
-    const oreName = getOreName(equipType, lvl, oreType)
-
-    if (success) {
-      return { newLevel: lvl + 1, broke: false, success: true, bsbUsed: 0, oreName, successRate: rate }
-    }
-
-    // BSB: ไม่ลดขั้นไม่ว่าจะเป็นประเภทไหน
-    if (noLevelLoss) {
-      const bsbUsed = BSB_COSTS[lvl] ?? 0
-      return { newLevel: lvl, broke: false, success: false, bsbUsed, oreName, successRate: rate }
-    }
-
-    // weapon_lv5 / armor_lv2 ที่ lvl < 10: ลดขั้นตามประเภทแร่ (ไม่ติด)
-    if (isEtherType && lvl < 10) {
-      const drop = oreType === 'normal' ? 3 : 1
-      return {
-        newLevel: Math.max(0, lvl - drop),
-        broke: false,
-        success: false,
-        bsbUsed: 0,
-        oreName,
-        successRate: rate,
-      }
-    }
-
-    if (noBreak) {
-      return {
-        newLevel: Math.max(0, lvl - 1),
-        broke: false,
-        success: false,
-        bsbUsed: 0,
-        oreName,
-        successRate: rate,
-      }
-    }
-    return { newLevel: 0, broke: true, success: false, bsbUsed: 0, oreName, successRate: rate }
-  }
+  const rollParams = { equipType, oreType, noBreak, noLevelLoss, useEventBsb }
 
   // ── Handlers ──────────────────────────────────────────────────────────────
   function handleSingleAttempt() {
     if (!canAttempt) return
-    const result = rollOne(currentLevel)
+    const result = rollOne(currentLevel, rollParams)
     const newId = counter + 1
     const attempt: SimAttempt = {
       id: newId,
@@ -205,19 +151,40 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
     setCurrentLevel(result.newLevel)
     setAttempts((prev) => [attempt, ...prev].slice(0, 500))
     setLastResult(result.broke ? 'break' : result.success ? 'success' : 'fail')
+    setTotalStats((prev) => ({
+      total: prev.total + 1,
+      successCount: prev.successCount + (result.success ? 1 : 0),
+      failCount: prev.failCount + (result.success ? 0 : 1),
+      breakCount: prev.breakCount + (result.broke ? 1 : 0),
+      totalBsb: prev.totalBsb + result.bsbUsed,
+      oreBreakdown: {
+        ...prev.oreBreakdown,
+        [result.oreName]: (prev.oreBreakdown[result.oreName] ?? 0) + 1,
+      },
+    }))
     if (result.broke) setIsBroken(true)
   }
 
-  function handleAutoRun() {
+  function handleBatchRun(maxIter: number) {
     if (!canAttempt) return
     let lvl = currentLevel
+    // ether type ที่เริ่มต่ำกว่า +10: จะ pause อัตโนมัติเมื่อถึง +10
+    const startedBelowEther =
+      (equipType === 'weapon_lv5' || equipType === 'armor_lv2') &&
+      lvl < 10 &&
+      targetLevel > 10
     let broken = false
+    let hitEtherThreshold = false
     let cnt = counter
     const newAttempts: SimAttempt[] = []
-    const MAX_ITER = 50000
 
-    while (lvl < targetLevel && !broken && newAttempts.length < MAX_ITER) {
-      const result = rollOne(lvl)
+    while (lvl < targetLevel && !broken && newAttempts.length < maxIter) {
+      // Pause ก่อนตี +10→+11: transition zone ของ ether type
+      if (startedBelowEther && lvl >= 10) {
+        hitEtherThreshold = true
+        break
+      }
+      const result = rollOne(lvl, rollParams)
       cnt++
       newAttempts.push({
         id: cnt,
@@ -233,11 +200,35 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
       if (result.broke) broken = true
     }
 
+    const hitLimit = !broken && !hitEtherThreshold && lvl < targetLevel
     setCounter(cnt)
     setCurrentLevel(lvl)
     setAttempts((prev) => [...[...newAttempts].reverse(), ...prev].slice(0, 500))
-    setLastResult(broken ? 'break' : lvl >= targetLevel ? 'success' : 'fail')
+    setLastResult(
+      broken ? 'break'
+      : lvl >= targetLevel ? 'success'
+      : hitEtherThreshold ? 'ether_pause'
+      : hitLimit ? 'limit'
+      : 'fail'
+    )
+    if (hitLimit) setLastRunLimit(maxIter)
+    setTotalStats((prev) => {
+      const updated = { ...prev, oreBreakdown: { ...prev.oreBreakdown } }
+      for (const a of newAttempts) {
+        updated.total++
+        if (a.success) updated.successCount++
+        else updated.failCount++
+        if (a.broke) updated.breakCount++
+        updated.totalBsb += a.bsbUsed
+        updated.oreBreakdown[a.oreName] = (updated.oreBreakdown[a.oreName] ?? 0) + 1
+      }
+      return updated
+    })
     if (broken) setIsBroken(true)
+  }
+
+  function handleAutoRun() {
+    handleBatchRun(50000)
   }
 
   function resetSim(resetHistory = false) {
@@ -247,13 +238,17 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
     if (resetHistory) {
       setAttempts([])
       setCounter(0)
+      setTotalStats({ total: 0, successCount: 0, failCount: 0, breakCount: 0, totalBsb: 0, oreBreakdown: {} })
     }
   }
 
   function handleEquipTypeChange(val: string) {
     const newType = val as RefineEquipType
     const newMax = REFINE_RATES[newType].maxLevel
+    const newIsEther = newType === 'weapon_lv5' || newType === 'armor_lv2'
     setEquipType(newType)
+    // weapon_lv5 / armor_lv2: default noBreak=true เพื่อป้องกันเสียหายระหว่าง batch run
+    setNoBreak(newIsEther)
     const newStart = Math.min(startLevel, newMax - 1)
     const newTarget = Math.min(Math.max(targetLevel, newStart + 1), newMax)
     setStartLevel(newStart)
@@ -400,7 +395,7 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
                     )}
                   >
                     <Shield className="size-3.5" />
-                    ไม่ติด (No Break)
+                    ไม่เสียหาย (No Break)
                   </button>
                   <button
                     onClick={() => setNoLevelLoss(!noLevelLoss)}
@@ -414,23 +409,44 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
                     <Shield className="size-3.5" />
                     ไม่ลดขั้น (BSB)
                   </button>
+                  <button
+                    onClick={() => setUseEventBsb(!useEventBsb)}
+                    disabled={!noLevelLoss}
+                    className={cn(
+                      'flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs transition-colors cursor-pointer select-none',
+                      !noLevelLoss
+                        ? 'opacity-30 cursor-not-allowed border-border text-muted-foreground'
+                        : useEventBsb
+                          ? 'border-pink-500 bg-pink-500/10 text-pink-400'
+                          : 'border-border text-muted-foreground hover:border-muted-foreground',
+                    )}
+                  >
+                    <Sparkles className="size-3.5" />
+                    BSB กิจกรรม
+                  </button>
                 </div>
                 <div className="min-h-[1rem] text-xs leading-relaxed">
-                  {isEtherType && !noLevelLoss && (
+                  {isEtherType && currentLevel < 10 && !noLevelLoss && (
                     <span className="text-sky-400/80">
-                      {equipType === 'weapon_lv5' ? 'อาวุธ Lv.5' : 'เกราะ Lv.2'} (&lt;+10):
-                      {' '}ธรรมดา −3 ขั้น · Enriched/HD −1 ขั้น
+                      {equipType === 'weapon_lv5' ? 'อาวุธ Lv.5' : 'เกราะ Lv.2'} (&lt;+10): ไม่เสียหายโดยอัตโนมัติ
+                      {' '}— ธรรมดา −3 ขั้น · Enriched/HD −1 ขั้น
                     </span>
                   )}
+                  {isEtherType && currentLevel >= 10 && !noBreak && !noLevelLoss && (
+                    <span className="text-red-400/70">+10 ขึ้นไป = อาจติดได้ — เลือกป้องกันหากต้องการ</span>
+                  )}
                   {!isEtherType && !noBreak && !noLevelLoss && (
-                    <span className="text-red-400/70">ไม่เลือกป้องกัน = ไอเทมติด (หาย)</span>
+                    <span className="text-red-400/70">ไม่เลือกป้องกัน = ไอเทมเสียหาย (หาย)</span>
                   )}
                   {!isEtherType && noBreak && !noLevelLoss && (
-                    <span className="text-blue-400/70">ล้มเหลว = ลดลง 1 ขั้น (ไม่ติด)</span>
+                    <span className="text-blue-400/70">ล้มเหลว = ลดลง 1 ขั้น (ไม่เสียหาย)</span>
+                  )}
+                  {isEtherType && noBreak && currentLevel >= 10 && !noLevelLoss && (
+                    <span className="text-blue-400/70">ล้มเหลว = ลดลง 1 ขั้น (ไม่เสียหาย)</span>
                   )}
                   {noLevelLoss && (
-                    <span className="text-amber-400/70">
-                      BSB จะถูกนับเฉพาะเมื่อ ≥+{safetyLevel} · มีข้อมูลถึง +13
+                    <span className={useEventBsb ? 'text-pink-400/70' : 'text-amber-400/70'}>
+                      BSB{useEventBsb ? ' กิจกรรม' : ''} จะถูกนับเฉพาะเมื่อ ≥+{safetyLevel} · มีข้อมูลถึง +13
                     </span>
                   )}
                 </div>
@@ -442,7 +458,7 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
               {isBroken ? (
                 <>
                   <div className="text-6xl">💥</div>
-                  <div className="text-red-400 font-semibold text-lg">ไอเทมติด!</div>
+                  <div className="text-red-400 font-semibold text-lg">ไอเทมเสียหาย!</div>
                   <div className="text-xs text-muted-foreground">กดรีเซ็ตไอเทมเพื่อเริ่มใหม่</div>
                 </>
               ) : (
@@ -487,32 +503,46 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
                     ? 'border-green-500/40 bg-green-500/10 text-green-400'
                     : lastResult === 'break'
                       ? 'border-red-500/40 bg-red-500/10 text-red-400'
-                      : 'border-orange-500/40 bg-orange-500/10 text-orange-400',
+                      : lastResult === 'ether_pause'
+                        ? 'border-sky-500/40 bg-sky-500/10 text-sky-400'
+                        : lastResult === 'limit'
+                          ? 'border-amber-500/40 bg-amber-500/10 text-amber-400'
+                          : 'border-orange-500/40 bg-orange-500/10 text-orange-400',
                 )}
               >
                 {lastResult === 'success'
                   ? '✓ Refine สำเร็จ!'
                   : lastResult === 'break'
-                    ? '✕ ไอเทมติด!'
-                    : '✕ Refine ล้มเหลว'}
+                    ? '✕ ไอเทมเสียหาย!'
+                    : lastResult === 'ether_pause'
+                      ? '⏸ ถึง +10 แล้ว — กลไกเปลี่ยน เปิด BSB หากต้องการก่อนตีต่อ'
+                      : lastResult === 'limit'
+                        ? `⏸ ครบ ${(lastRunLimit ?? 0).toLocaleString()} ครั้ง — กดต่อเพื่อดำเนินการต่อ`
+                        : '✕ Refine ล้มเหลว'}
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-2">
-              <Button onClick={handleSingleAttempt} disabled={!canAttempt} className="gap-2">
-                <StepForward className="size-4" />
-                ตีครั้งเดียว
+            <div className="grid grid-cols-3 gap-2">
+              <Button onClick={handleSingleAttempt} disabled={!canAttempt} size="sm" className="gap-1.5">
+                <StepForward className="size-3.5" />
+                ×1
               </Button>
-              <Button
-                onClick={handleAutoRun}
-                disabled={!canAttempt}
-                variant="secondary"
-                className="gap-2"
-              >
-                <Play className="size-4" />
-                ตีจนถึง +{targetLevel}
+              <Button onClick={() => handleBatchRun(100)} disabled={!canAttempt} size="sm" variant="outline" className="gap-1.5">
+                ×100
+              </Button>
+              <Button onClick={() => handleBatchRun(1000)} disabled={!canAttempt} size="sm" variant="outline" className="gap-1.5">
+                ×1,000
               </Button>
             </div>
+            <Button
+              onClick={handleAutoRun}
+              disabled={!canAttempt}
+              variant="secondary"
+              className="w-full gap-2"
+            >
+              <Play className="size-4" />
+              ตีจนถึง +{targetLevel}
+            </Button>
 
             <div className="grid grid-cols-2 gap-2">
               <Button
@@ -558,7 +588,7 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
                 color="orange"
               />
               <StatTile
-                label="ติด (หาย)"
+                label="เสียหาย (หาย)"
                 value={stats.breakCount.toLocaleString()}
                 color={stats.breakCount > 0 ? 'red' : undefined}
               />
@@ -614,7 +644,7 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
                     Enriched / HD
                   </th>
                   <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">
-                    BSB ต่อครั้ง
+                    BSB ต่อครั้ง{useEventBsb && <span className="ml-1 text-pink-400">♦กิจกรรม</span>}
                   </th>
                   <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">
                     แร่ที่ใช้
@@ -667,7 +697,14 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
                     </td>
                     <td className="px-3 py-1.5 text-center text-xs tabular-nums">
                       {row.bsbCost !== null ? (
-                        <span className="text-amber-400 font-medium">{row.bsbCost}</span>
+                        useEventBsb ? (
+                          <span className="flex flex-col items-center leading-tight gap-0.5">
+                            <span className="text-muted-foreground/40 line-through">{row.bsbCost}</span>
+                            <span className="text-pink-400 font-medium">{BSB_EVENT_COSTS[row.fromLevel] ?? row.bsbCost}</span>
+                          </span>
+                        ) : (
+                          <span className="text-amber-400 font-medium">{row.bsbCost}</span>
+                        )
                       ) : row.fromLevel >= safetyLevel ? (
                         <span className="text-muted-foreground/40">?</span>
                       ) : (

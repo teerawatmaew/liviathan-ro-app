@@ -103,9 +103,21 @@ export const REFINE_RATES: Record<RefineEquipType, RefineRateSet> = {
     safetyLevel: 3,
   },
 
-  // ── Shadow Gear ─────────────────────────────────────────────────────────
-  // Safety: +4  |  Ore: Shadow Orb / Shadow Crystal  |  Max refine: +10
-  shadow: {
+  // ── Shadow Weapon ────────────────────────────────────────────────────────────
+  // Safety: +4  |  Ore: Oridecon / Enriched Oridecon → Bradium / HD Bradium (+10+)
+  // อัตราเหมือน weapon_lv4  |  Max refine: +10
+  shadow_weapon: {
+    //              +0   +1   +2   +3   +4  +5  +6  +7  +8 +9
+    normal:     [100, 100, 100, 100,  60,  40, 40, 20, 20,  9],
+    enrichedHd: [100, 100, 100, 100,  90,  70, 70, 40, 40, 20],
+    maxLevel: 10,
+    safetyLevel: 4,
+  },
+
+  // ── Shadow Armor ─────────────────────────────────────────────────────────────
+  // Safety: +4  |  Ore: Elunium / Enriched Elunium → Carnium / HD Carnium (+10+)
+  // อัตราเหมือน armor_lv1  |  Max refine: +10
+  shadow_armor: {
     //              +0   +1   +2   +3   +4  +5  +6  +7  +8 +9
     normal:     [100, 100, 100, 100,  60,  40, 40, 20, 20,  9],
     enrichedHd: [100, 100, 100, 100,  90,  70, 70, 40, 40, 20],
@@ -129,6 +141,20 @@ export const BSB_COSTS: Record<number, number> = {
   11: 11,
   12: 16,
   13: 22,
+}
+
+/**
+ * BSB ช่วงกิจกรรม (Blacksmith’s Blessing Event) — อัตราลดเมื่อเปิดอิเวนท์
+ * ข้อมูลจากภาพ Blacksmith Blessing Event ที่ใช้ในเสิร์ฟเวอร์ ROlimit
+ */
+export const BSB_EVENT_COSTS: Record<number, number> = {
+   7:  1,
+   8:  2,
+   9:  3,
+  10:  4,
+  11:  7,
+  12: 11,
+  13: 16,
 }
 
 // ── Helper Functions ─────────────────────────────────────────────────────────

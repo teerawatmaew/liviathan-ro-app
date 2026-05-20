@@ -73,7 +73,7 @@ export default function RefineHistoryTable({ attempts }: Props) {
                   <td className="px-3 py-1.5 text-center">
                     {a.broke ? (
                       <Badge variant="destructive" className="text-xs py-0 h-5">
-                        ติด
+                        เสียหาย
                       </Badge>
                     ) : a.success ? (
                       <Badge className="text-xs py-0 h-5 bg-green-600 hover:bg-green-700">
