@@ -127,7 +127,11 @@ export default function RefineSimulatorPage() {
     const breakCount = attempts.filter((a) => a.broke).length
     const totalBsb = attempts.reduce((sum, a) => sum + a.bsbUsed, 0)
     const rate = total > 0 ? ((successCount / total) * 100).toFixed(1) : '0.0'
-    return { total, successCount, failCount, breakCount, totalBsb, rate }
+    const oreBreakdown = attempts.reduce<Record<string, number>>((acc, a) => {
+      acc[a.oreName] = (acc[a.oreName] ?? 0) + 1
+      return acc
+    }, {})
+    return { total, successCount, failCount, breakCount, totalBsb, rate, oreBreakdown }
   }, [attempts])
 
   const rateTableData = useMemo(() => {
@@ -564,6 +568,24 @@ export default function RefineSimulatorPage() {
                 color={stats.totalBsb > 0 ? 'amber' : undefined}
               />
             </div>
+
+            {Object.keys(stats.oreBreakdown).length > 0 && (
+              <div className="border-t pt-3 space-y-1.5">
+                <div className="text-xs font-medium text-muted-foreground">แร่ที่ใช้ทั้งหมด</div>
+                <div className="space-y-1">
+                  {Object.entries(stats.oreBreakdown)
+                    .sort(([, a], [, b]) => b - a)
+                    .map(([ore, count]) => (
+                      <div key={ore} className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground text-xs">{ore}</span>
+                        <span className="font-bold tabular-nums text-sm">
+                          {count.toLocaleString()}
+                        </span>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
