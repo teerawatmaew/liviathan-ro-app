@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { BookOpen, Calculator, Image, ArrowRight, Swords, ToggleLeft, Gem, Puzzle } from 'lucide-react'
+import { BookOpen, Image, ArrowRight, Swords, ToggleLeft, Gem, Puzzle } from 'lucide-react'
 import { usePageTitle } from '@/hooks/use-page-title'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,14 +9,14 @@ import { articles } from '@/features/content/data'
 import { ArticleCard } from '@/features/content/ArticleCard'
 
 const toolLinks = [
-  {
-    title: 'คำนวณ Stat',
-    description: 'HP, SP, ATK, MATK, HIT, FLEE, DEF, MDEF จาก Stat + Job + Level',
-    icon: Calculator,
-    url: PATHS.TOOLS_STAT,
-    color: 'text-purple-500',
-    bg: 'bg-purple-500/10',
-  },
+  // {
+  //   title: 'คำนวณ Stat',
+  //   description: 'HP, SP, ATK, MATK, HIT, FLEE, DEF, MDEF จาก Stat + Job + Level',
+  //   icon: Calculator,
+  //   url: PATHS.TOOLS_STAT,
+  //   color: 'text-purple-500',
+  //   bg: 'bg-purple-500/10',
+  // },
   {
     title: 'คำนวณ Damage',
     description: 'คำนวณ Damage สำหรับการโจมตีแบบต่าง ๆ',
@@ -88,9 +88,9 @@ export default function HomePage() {
               อ่านคู่มือ <ArrowRight className="ml-1 size-4" />
             </Link>
           </Button>
-          <Button variant="outline" asChild>
+          {/* <Button variant="outline" asChild>
             <Link to={PATHS.TOOLS_STAT}>ลองคำนวณ Stat</Link>
-          </Button>
+          </Button> */}
         </div>
       </section>
 

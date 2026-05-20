@@ -18,6 +18,7 @@ export const PATHS = {
   TOOLS_MP_JIGSAW: '/tools/mp-jigsaw-calculator',
   TOOLS_REFINE_SIMULATOR: '/tools/refine-simulator',
   // Misc
+  CHANGELOG: '/changelog',
   COMING_SOON: '/coming-soon',
 } as const
 

@@ -1,5 +1,5 @@
 import { Outlet, NavLink } from 'react-router-dom'
-import { House, BookOpen, Image, Swords, ToggleLeft, Gem, Puzzle, Hammer, ChevronRight, Sparkles } from 'lucide-react'
+import { House, BookOpen, Image, Swords, ToggleLeft, Gem, Puzzle, Hammer, ChevronRight, Sparkles, ScrollText } from 'lucide-react'
 import DonateButton from '@/layouts/DonateButton'
 
 function FacebookIcon({ className }: { className?: string }) {
@@ -43,6 +43,7 @@ const navSections: NavSection[] = [
     items: [
       { title: 'บทความ / คู่มือ', url: PATHS.CONTENT, icon: BookOpen },
       { title: 'แกลเลอรี่', url: PATHS.GALLERY, icon: Image },
+      { title: 'Changelog', url: PATHS.CHANGELOG, icon: ScrollText },
     ],
   },
   {
@@ -142,7 +143,12 @@ export default function MainLayout() {
               <span>Facebook</span>
             </a>
           </div>
-          <p className="text-xs text-muted-foreground">LiviathaN RO © 2026</p>
+          <NavLink
+            to={PATHS.CHANGELOG}
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors w-fit"
+          >
+            LiviathaN RO © 2026 · v{__APP_VERSION__}
+          </NavLink>
         </SidebarFooter>
       </Sidebar>
 
