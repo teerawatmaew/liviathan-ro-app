@@ -2,6 +2,14 @@ import { Outlet, NavLink } from 'react-router-dom'
 import { House, BookOpen, Image, Swords, ToggleLeft, Gem, Puzzle, Hammer, ChevronRight, Sparkles } from 'lucide-react'
 import DonateButton from '@/layouts/DonateButton'
 
+function FacebookIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+    </svg>
+  )
+}
+
 import {
   Sidebar,
   SidebarContent,
@@ -67,8 +75,8 @@ export default function MainLayout() {
         </SidebarHeader>
 
         <SidebarContent>
-          {navSections.map((section, i) => (
-            <SidebarGroup key={i}>
+          {navSections.map((section) => (
+            <SidebarGroup key={section.label ?? '__home__'}>
               {section.label && (
                 <SidebarGroupLabel>{section.label}</SidebarGroupLabel>
               )}
@@ -121,8 +129,20 @@ export default function MainLayout() {
           </SidebarGroup>
         </SidebarContent>
 
-        <SidebarFooter className="px-4 py-3 text-xs text-muted-foreground border-t">
-          LiviathaN RO © 2026
+        <SidebarFooter className="px-4 py-3 border-t space-y-3">
+          <div>
+            <p className="text-xs text-muted-foreground mb-1.5">ติดต่อเรา</p>
+            <a
+              href="https://www.facebook.com/maewtrw"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors w-fit"
+            >
+              <FacebookIcon className="size-4" />
+              <span>Facebook</span>
+            </a>
+          </div>
+          <p className="text-xs text-muted-foreground">LiviathaN RO © 2026</p>
         </SidebarFooter>
       </Sidebar>
 
@@ -131,7 +151,16 @@ export default function MainLayout() {
           <SidebarTrigger />
           <div className="w-px h-4 bg-border" />
           <span className="text-sm font-medium text-muted-foreground">LiviathaN RO</span>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            <a
+              href="https://www.facebook.com/maewtrw"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center size-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+              aria-label="Facebook"
+            >
+              <FacebookIcon className="size-4" />
+            </a>
             <DonateButton />
           </div>
         </header>

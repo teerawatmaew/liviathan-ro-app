@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { GalleryGrid } from '@/features/gallery/GalleryGrid'
+import { usePageTitle } from '@/hooks/use-page-title'
 import type { GalleryItem } from '@/types'
 
 const initialGallery: GalleryItem[] = [
@@ -27,6 +28,7 @@ const initialGallery: GalleryItem[] = [
 ]
 
 export default function GalleryPage() {
+  usePageTitle('แกลเลอรี่')
   const [items, setItems] = useState<GalleryItem[]>(initialGallery)
 
   function handleAdd(newItems: GalleryItem[]) {

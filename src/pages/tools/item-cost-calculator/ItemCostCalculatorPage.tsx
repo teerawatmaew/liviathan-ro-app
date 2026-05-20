@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { FlaskConical, Layers } from 'lucide-react'
+import { usePageTitle } from '@/hooks/use-page-title'
 import { Separator } from '@/components/ui/separator'
 import ReformSection from './ReformSection'
 import GradeSection from './GradeSection'
 
 export default function ItemCostCalculatorPage() {
+  usePageTitle('Enhancement Cost')
   const [section, setSection] = useState<'reform' | 'grade'>('reform')
 
   return (

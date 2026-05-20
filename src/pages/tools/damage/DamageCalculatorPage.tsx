@@ -1,6 +1,8 @@
 import { Swords } from 'lucide-react'
+import { usePageTitle } from '@/hooks/use-page-title'
 
 export default function DamageCalculatorPage() {
+  usePageTitle('คำนวณ Damage')
   return (
     <div className="p-6 max-w-3xl mx-auto space-y-4">
       <div>

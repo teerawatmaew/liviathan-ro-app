@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { Input } from '@/components/ui/input'
+import { usePageTitle } from '@/hooks/use-page-title'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import {
@@ -47,6 +48,7 @@ const statLabel: Record<keyof StatSet, string> = {
 const initialStats: StatSet = { str: 1, agi: 1, vit: 1, int: 1, dex: 1, luk: 1 }
 
 export default function StatCalculatorPage() {
+  usePageTitle('คำนวณ Stat')
   const [baseLevel, setBaseLevel] = useState(1)
   const [jobId, setJobId] = useState(jobsWithStats[0].id)
   const [stats, setStats] = useState<StatSet>(initialStats)

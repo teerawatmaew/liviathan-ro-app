@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Search } from 'lucide-react'
+import { usePageTitle } from '@/hooks/use-page-title'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { ArticleCard } from '@/features/content/ArticleCard'
@@ -9,17 +10,22 @@ import type { ArticleCategory } from '@/types'
 const categories: ArticleCategory[] = ['guide', 'news', 'update', 'showcase']
 
 export default function ContentPage() {
+  usePageTitle('บทความ / คู่มือ')
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState<ArticleCategory | 'all'>('all')
 
-  const filtered = articles.filter((a) => {
-    const matchSearch =
-      search === '' ||
-      a.title.toLowerCase().includes(search.toLowerCase()) ||
-      a.excerpt.toLowerCase().includes(search.toLowerCase())
-    const matchCategory = activeCategory === 'all' || a.category === activeCategory
-    return matchSearch && matchCategory
-  })
+  const filtered = useMemo(
+    () =>
+      articles.filter((a) => {
+        const matchSearch =
+          search === '' ||
+          a.title.toLowerCase().includes(search.toLowerCase()) ||
+          a.excerpt.toLowerCase().includes(search.toLowerCase())
+        const matchCategory = activeCategory === 'all' || a.category === activeCategory
+        return matchSearch && matchCategory
+      }),
+    [search, activeCategory],
+  )
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">

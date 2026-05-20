@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { Input } from '@/components/ui/input'
+import { usePageTitle } from '@/hooks/use-page-title'
 import { Label } from '@/components/ui/label'
 import {
   Card,
@@ -56,6 +57,7 @@ function calcBox(level: number, box: (typeof BOXES)[number]) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function MpJigsawCalculatorPage() {
+  usePageTitle('MP Jigsaw Calculator')
   const [levelInput, setLevelInput] = useState('')
 
   const level = parseInt(levelInput) || 0

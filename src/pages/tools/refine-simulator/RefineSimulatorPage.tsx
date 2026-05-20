@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { usePageTitle } from '@/hooks/use-page-title'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -92,8 +93,7 @@ function StatTile({
   )
 }
 
-export default function RefineSimulatorPage() {
-  // ── Settings ─────────────────────────────────────────────────────────────
+export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator')  // ── Settings ─────────────────────────────────────────────────────────────
   const [equipType, setEquipType] = useState<RefineEquipType>('weapon_lv4')
   const [oreType, setOreType] = useState<'normal' | 'enrichedHd'>('enrichedHd')
   const [startLevel, setStartLevel] = useState(0)

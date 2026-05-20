@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom'
 import { House, MapPinOff } from 'lucide-react'
+import { usePageTitle } from '@/hooks/use-page-title'
 import { Button } from '@/components/ui/button'
 import { PATHS } from '@/routes/paths'
 
 export default function NotFoundPage() {
+  usePageTitle('404 — ไม่พบหน้านี้')
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 p-6 text-center">
       <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center">

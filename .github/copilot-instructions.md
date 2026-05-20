@@ -62,37 +62,52 @@ src/
     centrallab/      # BossLookup, CountdownTimer, types, data/
     content/         # ArticleCard, data.ts
     gallery/         # GalleryGrid
-  hooks/             # Custom React hooks (use-mobile.ts ฯลฯ)
+  hooks/             # Custom React hooks
+    use-mobile.ts
+    use-page-title.ts  # อัปเดต document.title ต่อ route
   layouts/           # MainLayout.tsx — sidebar layout หลัก
+                     # DonateButton.tsx
   lib/
     utils.ts         # cn() = clsx + tailwind-merge
   pages/             # Page components — แต่ละ page อยู่ใน subfolder ของตัวเอง
+    coming-soon/
+      ComingSoonPage.tsx
     content/
       ContentPage.tsx
+    error/
+      ErrorPage.tsx  # React Router errorElement (runtime errors)
     gallery/
       GalleryPage.tsx
     home/
       HomePage.tsx
+    not-found/
+      NotFoundPage.tsx  # wildcard * route (404)
     tools/           # แต่ละ tool page มี subfolder แยก
       stat/
         StatCalculatorPage.tsx
-        # (sub-components เพิ่มที่นี่เมื่อ page ขยาย)
       damage/
         DamageCalculatorPage.tsx
       central-lab-helper/
         CentralLabHelperPage.tsx
-        # (sub-components เพิ่มที่นี่เมื่อ page ขยาย)
+        SwitchDecoder.tsx
+        PhaseTimers.tsx
       item-cost-calculator/
         ItemCostCalculatorPage.tsx
+        ReformSection.tsx
+        GradeSection.tsx
       mp-jigsaw-calculator/
         MpJigsawCalculatorPage.tsx
-      form/
-        FormPage.tsx
+      refine-simulator/
+        RefineSimulatorPage.tsx
+        RefineHistoryTable.tsx
   routes/
-    index.tsx        # createBrowserRouter config
+    index.tsx        # createBrowserRouter config (import จาก lazy-pages)
+    lazy-pages.tsx   # React.lazy() declarations + <Lazy> Suspense wrapper
     paths.ts         # PATHS constants ทั้งหมด
   types/
     index.ts         # TypeScript types กลาง
+docs/
+  audit-production-readiness.md  # Production / Vercel deployment audit
 ```
 
 ### กฎ Naming
@@ -147,12 +162,17 @@ export default function NewFeaturePage() {
 >   FeatureResults.tsx   ← sub-component
 > ```
 
-### Step 3 — ลงทะเบียน Route ใน `src/routes/index.tsx`
+### Step 3 — เพิ่ม lazy import ใน `src/routes/lazy-pages.tsx`
 ```tsx
-import NewFeaturePage from '@/pages/tools/new-feature/NewFeaturePage'
+export const NewFeaturePage = lazy(() => import('@/pages/tools/new-feature/NewFeaturePage'))
+```
+
+แล้วเพิ่ม route ใน `src/routes/index.tsx`:
+```tsx
+import { NewFeaturePage, Lazy } from './lazy-pages'
 
 // เพิ่มใน children array:
-{ path: PATHS.TOOLS_NEW_FEATURE, element: <NewFeaturePage /> },
+{ path: PATHS.TOOLS_NEW_FEATURE, element: <Lazy><NewFeaturePage /></Lazy> },
 ```
 
 ### Step 4 — เพิ่มเมนูใน `src/layouts/MainLayout.tsx`
@@ -334,18 +354,23 @@ import { myData } from '@/data/monsters'
 ## 7. Routing
 
 ใช้ `createBrowserRouter` (React Router v7), nested routes ทั้งหมดอยู่ภายใต้ `<MainLayout />`
+ทุก page โหลดแบบ lazy ผ่าน `React.lazy()` ใน `src/routes/lazy-pages.tsx`
 
 ```
-/                   HomePage
-/content            ContentPage
-/gallery            GalleryPage
-/tools/stat         StatCalculatorPage
-/tools/damage       DamageCalculatorPage
+/                           HomePage
+/content                    ContentPage
+/gallery                    GalleryPage
+/tools/stat                 StatCalculatorPage
+/tools/damage               DamageCalculatorPage
 /tools/central-lab-helper   CentralLabHelperPage
-/tools/item-cost-calculator  ItemCostCalculatorPage
-/tools/mp-jigsaw-calculator  MpJigsawCalculatorPage
+/tools/item-cost-calculator ItemCostCalculatorPage
+/tools/mp-jigsaw-calculator MpJigsawCalculatorPage
+/tools/refine-simulator     RefineSimulatorPage
+/coming-soon                ComingSoonPage
+*                           NotFoundPage (404)
 ```
 
+**errorElement:** `<ErrorPage />` รับ runtime errors ระดับ router
 Import `PATHS` จาก `@/routes/paths` เสมอเมื่อ navigate หรือ link
 
 ---
@@ -358,7 +383,8 @@ Sidebar ใน `MainLayout.tsx` แบ่งเป็น section:
 |---|---|
 | (ไม่มี label) | หน้าหลัก |
 | คอนเทนต์ | บทความ / คู่มือ, แกลเลอรี่ |
-| เครื่องมือ | คำนวณ Stat, คำนวณ Damage, Central Lab Helper, Item Cost Calculator, MP Jigsaw Calculator |
+| เครื่องมือ | คำนวณ Damage, Central Lab Helper, Item Cost Calculator, MP Jigsaw Calculator, Refine Simulator |
+| (ท้าย sidebar) | Coming Soon |
 
 เมื่อเพิ่มเมนูใหม่ให้เลือก section ที่เหมาะสม หรือสร้าง section ใหม่ถ้าหมวดหมู่ต่างออกไป
 
@@ -372,17 +398,20 @@ Sidebar ใน `MainLayout.tsx` แบ่งเป็น section:
 | ContentPage | `/content` | รายการบทความพร้อม search + category filter |
 | GalleryPage | `/gallery` | แกลเลอรี่รูป |
 | StatCalculatorPage | `/tools/stat` | คำนวณ HP/SP/ATK/MATK/HIT/FLEE/DEF/MDEF จาก Stat + Job + Level |
-| DamageCalculatorPage | `/tools/damage` | คำนวณ Damage |
+| DamageCalculatorPage | `/tools/damage` | คำนวณ Damage (WIP) |
 | CentralLabHelperPage | `/tools/central-lab-helper` | แปลงเลขฐาน 10 → bit switch (SW1–SW8) + Boss Lookup + Countdown Timer |
-| ItemCostCalculatorPage | `/tools/item-cost-calculator` | คำนวณ Zeny / วัตถุดิบในการ Enhancement |
+| ItemCostCalculatorPage | `/tools/item-cost-calculator` | คำนวณ Zeny / วัตถุดิบในการ Enhancement (Reform & Grade) |
 | MpJigsawCalculatorPage | `/tools/mp-jigsaw-calculator` | คำนวณจำนวน Jigsaw ที่ได้จาก Mystical Pass ตามเลเวลปัจจุบัน |
+| RefineSimulatorPage | `/tools/refine-simulator` | จำลองการ refine อาวุธ/เกราะ — แสดงอัตราสำเร็จ, BSB cost, สถิติ |
+| ComingSoonPage | `/coming-soon` | placeholder สำหรับ feature ที่กำลังพัฒนา |
+| NotFoundPage | `*` | 404 — URL ไม่พบ |
+| ErrorPage | errorElement | runtime error fallback (React Router) |
 
 ---
 
 ## 10. Ideas / Roadmap (feature ที่อาจเพิ่มในอนาคต)
 
 ### เครื่องมือ (Tools)
-- **Refine Cost Calculator** — คำนวณโอกาสและวัสดุในการ refine อาวุธ/เกราะ
 - **MVP Timer** — จับเวลา respawn MVP boss หลายตัวพร้อมกัน
 - **Equipment Simulator** — จำลอง equipment slot + แสดง stat ที่เปลี่ยนแปลง
 - **Skill Simulator** — วางแผน skill tree / skill build
@@ -428,8 +457,25 @@ Sidebar ใน `MainLayout.tsx` แบ่งเป็น section:
 ## 12. Commands
 
 ```bash
-npm run dev       # Start dev server (Vite)
-npm run build     # tsc + vite build
-npm run lint      # ESLint
-npm run preview   # Preview production build
+pnpm dev          # Start dev server (Vite) → http://localhost:5173
+pnpm run build    # tsc + vite build → dist/
+pnpm run lint     # ESLint
+pnpm run preview  # Preview production build
 ```
+
+## 13. Production & Deployment
+
+| ไฟล์ | หน้าที่ |
+|---|---|
+| `vercel.json` | SPA rewrite — ทุก URL → `index.html` (แก้ refresh 404) |
+| `.gitattributes` | บังคับ LF line endings สำหรับ ts/tsx/css/md |
+| `docs/audit-production-readiness.md` | Production audit + Vercel deployment checklist |
+
+**Build output (gzipped):**
+- `vendor` chunk: ~91 kB (React + Router)
+- `ui` chunk: ~15 kB (Radix + Lucide)
+- แต่ละ page: 0.5–6 kB (lazy loaded แยกกัน)
+
+**ยังต้องทำก่อน fully production:**
+- เพิ่ม `og:image` + `apple-touch-icon.png` (รอ domain จริง)
+- เพิ่ม `sitemap.xml` (รอ domain จริง)

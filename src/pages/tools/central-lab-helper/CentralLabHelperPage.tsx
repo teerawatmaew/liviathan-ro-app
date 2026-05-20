@@ -1,9 +1,11 @@
 import { Separator } from '@/components/ui/separator'
 import BossLookup from '@/features/centrallab/BossLookup'
+import { usePageTitle } from '@/hooks/use-page-title'
 import SwitchDecoder from './SwitchDecoder'
 import PhaseTimers from './PhaseTimers'
 
 export default function CentralLabHelperPage() {
+  usePageTitle('Central Lab Helper')
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
       <div>

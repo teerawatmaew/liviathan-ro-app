@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { BookOpen, Calculator, Image, ArrowRight, Swords, ToggleLeft, Gem, Puzzle } from 'lucide-react'
+import { usePageTitle } from '@/hooks/use-page-title'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
@@ -70,6 +71,7 @@ const contentLinks = [
 ]
 
 export default function HomePage() {
+  usePageTitle('หน้าหลัก')
   const recentArticles = articles.slice(0, 3)
 
   return (

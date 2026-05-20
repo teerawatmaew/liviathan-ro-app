@@ -1,6 +1,8 @@
 import { Sparkles } from 'lucide-react'
+import { usePageTitle } from '@/hooks/use-page-title'
 
 export default function ComingSoonPage() {
+  usePageTitle('Coming Soon')
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 p-6 text-center">
       <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">

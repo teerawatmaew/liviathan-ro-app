@@ -9,16 +9,16 @@ import type { Boss, ElementType, StageType } from './types'
 // ─── Element badge colours ──────────────────────────────────────────────────
 
 const elementCls: Record<ElementType, string> = {
-  Neutral: 'bg-slate-100 text-slate-700  border-slate-300',
-  Water:   'bg-blue-100  text-blue-700   border-blue-300',
-  Earth:   'bg-amber-100 text-amber-700  border-amber-300',
-  Fire:    'bg-red-100   text-red-700    border-red-300',
-  Wind:    'bg-green-100 text-green-700  border-green-300',
-  Poison:  'bg-purple-100 text-purple-700 border-purple-300',
-  Holy:    'bg-yellow-100 text-yellow-600 border-yellow-300',
-  Shadow:  'bg-indigo-100 text-indigo-700 border-indigo-300',
-  Ghost:   'bg-gray-100  text-gray-600   border-gray-300',
-  Undead:  'bg-zinc-800  text-zinc-100   border-zinc-600',
+  Neutral: 'bg-slate-800 text-slate-200 border-slate-600',
+  Water:   'bg-blue-900/60 text-blue-300 border-blue-700',
+  Earth:   'bg-amber-900/60 text-amber-300 border-amber-700',
+  Fire:    'bg-red-900/60 text-red-300 border-red-700',
+  Wind:    'bg-green-900/60 text-green-300 border-green-700',
+  Poison:  'bg-purple-900/60 text-purple-300 border-purple-700',
+  Holy:    'bg-yellow-900/60 text-yellow-200 border-yellow-700',
+  Shadow:  'bg-indigo-900/60 text-indigo-300 border-indigo-700',
+  Ghost:   'bg-gray-800 text-gray-300 border-gray-600',
+  Undead:  'bg-zinc-900 text-zinc-300 border-zinc-700',
 }
 
 function pctCls(pct: number) {
