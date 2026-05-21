@@ -22,6 +22,15 @@ export interface ChangelogEntry {
  */
 export const changelog: ChangelogEntry[] = [
   {
+    version: '0.5.0',
+    date: '2026-05-21',
+    changes: [
+      { type: 'feat', description: 'เพิ่มแสดงยอด Zeny ที่ใช้รวมในสถิติ Refine Simulator (Event Item)' },
+      { type: 'feat', description: 'เพิ่มคอลัมน์ Zeny/ครั้ง ในตารางอัตราสำหรับ Event Item' },
+      { type: 'fix', description: 'แก้ไขการนับจำนวนวัตถุดิบใน "แร่ที่ใช้ทั้งหมด" ให้ใช้จำนวนจริงต่อ attempt แทนการนับแค่จำนวนครั้ง' },
+    ],
+  },
+  {
     version: '0.4.0',
     date: '2026-05-21',
     changes: [

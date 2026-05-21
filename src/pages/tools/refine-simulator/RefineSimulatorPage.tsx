@@ -119,6 +119,7 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
     failCount: 0,
     breakCount: 0,
     totalBsb: 0,
+    totalZeny: 0,
     oreBreakdown: {} as Record<string, number>,
   })
 
@@ -139,6 +140,7 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
         isSafe: i < eventItem.safetyLevel,
         bsbCost: null as number | null,
         oreCount: eventItem.oreCount(i),
+        zenyCost: eventItem.zenyCost as number | null,
         pityCap: eventItem.pityCaps?.[i] ?? null,
       }))
     }
@@ -149,6 +151,7 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
       isSafe: i < safetyLevel,
       bsbCost: BSB_COSTS[i] ?? null,
       oreCount: null as number | null,
+      zenyCost: null as number | null,
       pityCap: null as number | null,
     }))
   }, [maxLevel, safetyLevel, rateData, isEventType, eventItem])
@@ -191,9 +194,10 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
       failCount: prev.failCount + (result.success ? 0 : 1),
       breakCount: prev.breakCount + (result.broke ? 1 : 0),
       totalBsb: prev.totalBsb + result.bsbUsed,
+      totalZeny: prev.totalZeny + (isEventType && eventItem ? eventItem.zenyCost : 0),
       oreBreakdown: {
         ...prev.oreBreakdown,
-        [result.oreName]: (prev.oreBreakdown[result.oreName] ?? 0) + 1,
+        [result.oreName]: (prev.oreBreakdown[result.oreName] ?? 0) + (isEventType && eventItem ? eventItem.oreCount(currentLevel) : 1),
       },
     }))
     if (result.broke) setIsBroken(true)
@@ -261,8 +265,9 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
         else updated.failCount++
         if (a.broke) updated.breakCount++
         updated.totalBsb += a.bsbUsed
-        updated.oreBreakdown[a.oreName] = (updated.oreBreakdown[a.oreName] ?? 0) + 1
+        updated.oreBreakdown[a.oreName] = (updated.oreBreakdown[a.oreName] ?? 0) + (isEventType && eventItem ? eventItem.oreCount(a.fromLevel) : 1)
       }
+      updated.totalZeny += newAttempts.length * (isEventType && eventItem ? eventItem.zenyCost : 0)
       return updated
     })
     if (broken) setIsBroken(true)
@@ -280,7 +285,7 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
     if (resetHistory) {
       setAttempts([])
       setCounter(0)
-      setTotalStats({ total: 0, successCount: 0, failCount: 0, breakCount: 0, totalBsb: 0, oreBreakdown: {} })
+      setTotalStats({ total: 0, successCount: 0, failCount: 0, breakCount: 0, totalBsb: 0, totalZeny: 0, oreBreakdown: {} })
     }
   }
 
@@ -678,6 +683,13 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
                 value={stats.totalBsb.toLocaleString()}
                 color={stats.totalBsb > 0 ? 'amber' : undefined}
               />
+              <div className="col-span-2">
+                <StatTile
+                  label="Zeny ที่ใช้"
+                  value={`${stats.totalZeny.toLocaleString()} Z`}
+                  color={stats.totalZeny > 0 ? 'amber' : undefined}
+                />
+              </div>
             </div>
 
             {Object.keys(stats.oreBreakdown).length > 0 && (
@@ -734,6 +746,11 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
                   {!isEventType && (
                     <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">
                       BSB ต่อครั้ง{useEventBsb && <span className="ml-1 text-pink-400">♦กิจกรรม</span>}
+                    </th>
+                  )}
+                  {isEventType && (
+                    <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">
+                      Zeny/ครั้ง
                     </th>
                   )}
                   <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">
@@ -812,6 +829,11 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
                         ) : (
                           <span className="text-muted-foreground/40">—</span>
                         )}
+                      </td>
+                    )}
+                    {isEventType && (
+                      <td className="px-3 py-1.5 text-center text-xs tabular-nums whitespace-nowrap">
+                        <span className="text-amber-300 font-medium">{row.zenyCost?.toLocaleString()}</span>
                       </td>
                     )}
                     <td className="px-3 py-1.5 text-center text-xs text-muted-foreground whitespace-nowrap">
