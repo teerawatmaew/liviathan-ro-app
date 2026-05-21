@@ -22,6 +22,14 @@ export interface ChangelogEntry {
  */
 export const changelog: ChangelogEntry[] = [
   {
+    version: '0.5.1',
+    date: '2026-05-21',
+    changes: [
+      { type: 'improve', description: 'เพิ่ม Open Graph image (og:image) ขนาด 1200×630 สำหรับการแสดงผลตอนแชร์ลิงก์บน Facebook, LINE และ Discord' },
+      { type: 'improve', description: 'เพิ่ม og:url และปรับปรุง Twitter Card เป็น summary_large_image พร้อม twitter:image' },
+    ],
+  },
+  {
     version: '0.5.0',
     date: '2026-05-21',
     changes: [

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 1200px;
+      height: 630px;
+      background: #09090b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      overflow: hidden;
+    }
+    .bg-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,0,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,0,255,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+    .glow-top {
+      position: absolute;
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 300px;
+      background: radial-gradient(ellipse at center, rgba(255,0,255,0.15) 0%, transparent 70%);
+    }
+    .glow-bottom {
+      position: absolute;
+      bottom: -80px;
+      right: 100px;
+      width: 400px;
+      height: 250px;
+      background: radial-gradient(ellipse at center, rgba(0,255,255,0.1) 0%, transparent 70%);
+    }
+    .container {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      text-align: center;
+    }
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .logo-img {
+      width: 100px;
+      height: 100px;
+      object-fit: contain;
+    }
+    .site-name {
+      font-size: 80px;
+      font-weight: 900;
+      letter-spacing: -2px;
+      color: #ffffff;
+      text-shadow:
+        0 0 20px rgba(255,0,255,0.8),
+        0 0 40px rgba(255,0,255,0.4),
+        3px 3px 0 rgba(0,255,255,0.5);
+    }
+    .tagline {
+      font-size: 26px;
+      color: rgba(255,255,255,0.65);
+      letter-spacing: 1px;
+      font-weight: 400;
+    }
+    .badges {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .badge {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 999px;
+      padding: 6px 18px;
+      font-size: 17px;
+      color: rgba(255,255,255,0.7);
+      font-weight: 500;
+    }
+    .badge.pink { border-color: rgba(255,0,255,0.4); color: rgba(255,100,255,0.9); }
+    .badge.cyan { border-color: rgba(0,255,255,0.4); color: rgba(100,255,255,0.9); }
+    .domain {
+      position: absolute;
+      bottom: 32px;
+      right: 48px;
+      font-size: 18px;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="glow-top"></div>
+  <div class="glow-bottom"></div>
+  <div class="container">
+    <div class="logo-row">
+      <img class="logo-img" src="../public/images/logo/LVT.png" alt="LVT" />
+      <div class="site-name">LiviathaN RO</div>
+    </div>
+    <div class="tagline">คู่มือ · เครื่องมือคำนวณ · แกลเลอรี่ — Ragnarok Online</div>
+    <div class="badges">
+      <span class="badge pink">Damage Calculator</span>
+      <span class="badge">Central Lab Helper</span>
+      <span class="badge cyan">Refine Simulator</span>
+    </div>
+  </div>
+  <div class="domain">liviathan-ro-app.vercel.app</div>
+</body>
+</html>
