@@ -1,5 +1,5 @@
 import { Outlet, NavLink } from 'react-router-dom'
-import { House, BookOpen, Image, Swords, ToggleLeft, Gem, Puzzle, Hammer, ChevronRight, Sparkles, ScrollText } from 'lucide-react'
+import { House, BookOpen, Image, Swords, ToggleLeft, Gem, Puzzle, Hammer, ChevronRight, Sparkles, ScrollText, Coins } from 'lucide-react'
 import DonateButton from '@/layouts/DonateButton'
 
 function FacebookIcon({ className }: { className?: string }) {
@@ -54,6 +54,7 @@ const navSections: NavSection[] = [
       { title: 'Item Cost Calculator', url: PATHS.TOOLS_ITEM_COST, icon: Gem },
       { title: 'MP Jigsaw Calculator', url: PATHS.TOOLS_MP_JIGSAW, icon: Puzzle },
       { title: 'Refine Simulator', url: PATHS.TOOLS_REFINE_SIMULATOR, icon: Hammer },
+      { title: 'Zeny → Baht', url: PATHS.TOOLS_ZENY_CALCULATOR, icon: Coins },
     ],
   },
 ]

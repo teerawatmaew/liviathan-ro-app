@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { usePageTitle } from '@/hooks/use-page-title'
+import { useLocalStorage } from '@/hooks/use-local-storage'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -75,13 +76,13 @@ function StatTile({
 }
 
 export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator')  // ── Settings ─────────────────────────────────────────────────────────────
-  const [equipType, setEquipType] = useState<RefineEquipType>('weapon_lv4')
-  const [oreType, setOreType] = useState<'normal' | 'enrichedHd'>('enrichedHd')
-  const [startLevel, setStartLevel] = useState(0)
-  const [targetLevel, setTargetLevel] = useState(10)
-  const [noBreak, setNoBreak] = useState(false)
-  const [noLevelLoss, setNoLevelLoss] = useState(false)
-  const [useEventBsb, setUseEventBsb] = useState(false)
+  const [equipType, setEquipType] = useLocalStorage<RefineEquipType>('lro-refine-equipType', 'weapon_lv4')
+  const [oreType, setOreType] = useLocalStorage<'normal' | 'enrichedHd'>('lro-refine-oreType', 'enrichedHd')
+  const [startLevel, setStartLevel] = useLocalStorage('lro-refine-startLevel', 0)
+  const [targetLevel, setTargetLevel] = useLocalStorage('lro-refine-targetLevel', 10)
+  const [noBreak, setNoBreak] = useLocalStorage('lro-refine-noBreak', false)
+  const [noLevelLoss, setNoLevelLoss] = useLocalStorage('lro-refine-noLevelLoss', false)
+  const [useEventBsb, setUseEventBsb] = useLocalStorage('lro-refine-useEventBsb', false)
 
   // ── Simulation State ──────────────────────────────────────────────────────
   const [currentLevel, setCurrentLevel] = useState(0)

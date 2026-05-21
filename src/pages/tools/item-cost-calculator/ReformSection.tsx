@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useLocalStorage } from '@/hooks/use-local-storage'
 import { Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -18,7 +18,7 @@ const presetGroups = PRESET_ITEMS.reduce<Record<string, typeof PRESET_ITEMS>>(
 )
 
 export default function ReformSection() {
-  const [sdPriceRaw, setSdPriceRaw] = useState('')
+  const [sdPriceRaw, setSdPriceRaw] = useLocalStorage('lro-reform-sdPrice', '')
   const [items, setItems] = useState<CalcItem[]>([
     { id: nextId(), category: 'enhancement', type: 'Armor', grade: 'Supreme', qty: 1 },
   ])

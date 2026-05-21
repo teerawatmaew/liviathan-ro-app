@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useLocalStorage } from '@/hooks/use-local-storage'
 import { FlaskConical, Layers } from 'lucide-react'
 import { usePageTitle } from '@/hooks/use-page-title'
 import { Separator } from '@/components/ui/separator'
@@ -7,7 +7,7 @@ import GradeSection from './GradeSection'
 
 export default function ItemCostCalculatorPage() {
   usePageTitle('Enhancement Cost')
-  const [section, setSection] = useState<'reform' | 'grade'>('reform')
+  const [section, setSection] = useLocalStorage<'reform' | 'grade'>('lro-item-section', 'reform')
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-6">

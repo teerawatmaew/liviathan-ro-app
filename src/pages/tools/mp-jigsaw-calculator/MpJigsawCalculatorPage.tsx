@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react'
+import { useMemo } from 'react'
 import { Input } from '@/components/ui/input'
 import { usePageTitle } from '@/hooks/use-page-title'
+import { useLocalStorage } from '@/hooks/use-local-storage'
 import { Label } from '@/components/ui/label'
 import {
   Card,
@@ -17,7 +18,7 @@ import { BOXES, calcBox } from './mpJigsawLogic'
 
 export default function MpJigsawCalculatorPage() {
   usePageTitle('MP Jigsaw Calculator')
-  const [levelInput, setLevelInput] = useState('')
+  const [levelInput, setLevelInput] = useLocalStorage('lro-mp-level', '')
 
   const level = parseInt(levelInput) || 0
 

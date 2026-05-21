@@ -17,6 +17,7 @@ export const PATHS = {
   TOOLS_ITEM_COST: '/tools/item-cost-calculator',
   TOOLS_MP_JIGSAW: '/tools/mp-jigsaw-calculator',
   TOOLS_REFINE_SIMULATOR: '/tools/refine-simulator',
+  TOOLS_ZENY_CALCULATOR: '/tools/zeny-calculator',
   // Misc
   CHANGELOG: '/changelog',
   COMING_SOON: '/coming-soon',

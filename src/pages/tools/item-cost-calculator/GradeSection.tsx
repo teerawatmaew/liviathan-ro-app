@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useLocalStorage } from '@/hooks/use-local-storage'
 import { Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -13,10 +13,11 @@ import {
 } from './types'
 
 export default function GradeSection() {
-  const [gradePrices, setGradePrices] = useState<GradeMaterialPrices>(
-    () => Object.fromEntries(GRADE_MATERIAL_INPUTS.map(m => [m.key, ''])) as GradeMaterialPrices,
+  const [gradePrices, setGradePrices] = useLocalStorage<GradeMaterialPrices>(
+    'lro-grade-prices',
+    Object.fromEntries(GRADE_MATERIAL_INPUTS.map(m => [m.key, ''])) as GradeMaterialPrices,
   )
-  const [calcEtelFromDust, setCalcEtelFromDust] = useState(false)
+  const [calcEtelFromDust, setCalcEtelFromDust] = useLocalStorage('lro-grade-calcEtelFromDust', false)
   const [gradeItems, setGradeItems] = useState<GradeCalcItem[]>([
     { id: nextId(), recipe: 'Etel Stone', qty: 1 },
   ])

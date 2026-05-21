@@ -7,7 +7,7 @@ import {
   HomePage, ContentPage, GalleryPage,
   StatCalculatorPage, DamageCalculatorPage,
   CentralLabHelperPage, ItemCostCalculatorPage,
-  MpJigsawCalculatorPage, RefineSimulatorPage,
+  MpJigsawCalculatorPage, RefineSimulatorPage, ZenyCalculatorPage,
   ChangelogPage, ComingSoonPage, NotFoundPage,
   Lazy,
 } from './lazy-pages'
@@ -26,6 +26,7 @@ export const router = createBrowserRouter([
       { path: PATHS.TOOLS_ITEM_COST,         element: <Lazy><ItemCostCalculatorPage /></Lazy> },
       { path: PATHS.TOOLS_MP_JIGSAW,         element: <Lazy><MpJigsawCalculatorPage /></Lazy> },
       { path: PATHS.TOOLS_REFINE_SIMULATOR,  element: <Lazy><RefineSimulatorPage /></Lazy> },
+      { path: PATHS.TOOLS_ZENY_CALCULATOR,    element: <Lazy><ZenyCalculatorPage /></Lazy> },
       { path: PATHS.CHANGELOG,               element: <Lazy><ChangelogPage /></Lazy> },
       { path: PATHS.COMING_SOON,             element: <Lazy><ComingSoonPage /></Lazy> },
       { path: '*',                           element: <Lazy><NotFoundPage /></Lazy> },

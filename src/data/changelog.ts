@@ -22,6 +22,13 @@ export interface ChangelogEntry {
  */
 export const changelog: ChangelogEntry[] = [
   {
+    version: '0.2.0',
+    date: '2026-05-21',
+    changes: [
+      { type: 'feat', description: 'เพิ่มเครื่องมือ Zeny ↔ Baht Calculator — แปลง Zeny เป็นเงินบาทและย้อนกลับ รองรับหน่วย M (ล้าน) และ Zeny พร้อมกรอกอัตราตลาดปัจจุบันเอง' },
+    ],
+  },
+  {
     version: '0.1.1',
     date: '2026-05-21',
     changes: [
