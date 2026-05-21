@@ -13,6 +13,26 @@ import type { Boss } from '../types'
 export const centralLabBosses: Boss[] = [
   // ── A ─────────────────────────────────────────────────────────────────────
   {
+    id: 'abysmal-witch',
+    name: 'Abysmal Witch',
+    element: 'Shadow',
+    elementLevel: 3,
+    race: 'Demon',
+    size: 'Large',
+    stage: 2,
+    notes: undefined,
+  },
+  {
+    id: 'amon-ra-nightmare',
+    name: 'Amon Ra (Nightmare)',
+    element: 'Earth',
+    elementLevel: 3,
+    race: 'Demi-Human',
+    size: 'Large',
+    stage: 2,
+    notes: undefined,
+  },
+  {
     id: 'angeling',
     name: 'Angeling',
     element: 'Holy',
@@ -23,14 +43,14 @@ export const centralLabBosses: Boss[] = [
     notes: undefined,
   },
   {
-    id: 'atroce',
-    name: 'Atroce',
-    element: 'Shadow',
-    elementLevel: 3,
+    id: 'awaken-ktullanux',
+    name: 'Awaken Ktullanux',
+    element: 'Water',
+    elementLevel: 4,
     race: 'Brute',
     size: 'Large',
-    stage: 3,
-    notes: undefined,
+    stage: 2,
+    notes: 'ป้องกัน Freeze, แนะนำชุดธาตุ Water',
   },
 
   // ── B ─────────────────────────────────────────────────────────────────────
@@ -55,6 +75,16 @@ export const centralLabBosses: Boss[] = [
     notes: 'ควรลด Neutral damage',
   },
   {
+    id: 'big-eggring',
+    name: 'Big Eggring',
+    element: 'Earth',
+    elementLevel: 3,
+    race: 'Plant',
+    size: 'Medium',
+    stage: 1,
+    notes: undefined,
+  },
+  {
     id: 'boitata',
     name: 'Boitata',
     element: 'Fire',
@@ -64,18 +94,40 @@ export const centralLabBosses: Boss[] = [
     stage: 2,
     notes: 'ใช้ Shield Reflect — แนะนำชุดธาตุ Fire หรือ Water',
   },
-
-  // ── D ─────────────────────────────────────────────────────────────────────
   {
-    id: 'dark-guardian-kades',
-    name: 'Dark Guardian Kades',
+    id: 'bone-detardeurus',
+    name: 'Bone Detardeurus',
+    element: 'Undead',
+    elementLevel: 4,
+    race: 'Undead',
+    size: 'Large',
+    stage: 2,
+    notes: 'Undead race — โจมตีด้วย Holy ได้ผลดี',
+  },
+  {
+    id: 'burning-fang',
+    name: 'Burning Fang',
+    element: 'Fire',
+    elementLevel: 4,
+    race: 'Brute',
+    size: 'Large',
+    stage: 2,
+    notes: 'แนะนำชุดธาตุ Fire',
+  },
+
+  // ── C ─────────────────────────────────────────────────────────────────────
+  {
+    id: 'corrupted-spider-queen',
+    name: 'Corrupted Spider Queen',
     element: 'Shadow',
     elementLevel: 3,
-    race: 'Formless',
+    race: 'Demon',
     size: 'Large',
-    stage: 3,
-    notes: 'Bomb ทำลายอาวุธ — แนะนำชุดธาตุ Fire',
+    stage: 2,
+    notes: undefined,
   },
+
+  // ── D ─────────────────────────────────────────────────────────────────────
   {
     id: 'dark-lord',
     name: 'Dark Lord',
@@ -85,6 +137,16 @@ export const centralLabBosses: Boss[] = [
     size: 'Large',
     stage: 2,
     notes: 'ใช้ Meteor Storm — แนะนำชุดธาตุ Fire',
+  },
+  {
+    id: 'death-witch',
+    name: 'Death Witch',
+    element: 'Shadow',
+    elementLevel: 2,
+    race: 'Demi-Human',
+    size: 'Medium',
+    stage: 3,
+    notes: undefined,
   },
   {
     id: 'detardeurus',
@@ -105,26 +167,6 @@ export const centralLabBosses: Boss[] = [
     size: 'Medium',
     stage: 1,
     notes: undefined,
-  },
-  {
-    id: 'dracula',
-    name: 'Dracula',
-    element: 'Shadow',
-    elementLevel: 4,
-    race: 'Demon',
-    size: 'Large',
-    stage: 1,
-    notes: undefined,
-  },
-  {
-    id: 'drake',
-    name: 'Drake',
-    element: 'Undead',
-    elementLevel: 1,
-    race: 'Undead',
-    size: 'Medium',
-    stage: 2,
-    notes: 'ใช้ Waterball — แนะนำชุดธาตุ Water',
   },
 
   // ── E ─────────────────────────────────────────────────────────────────────
@@ -148,28 +190,20 @@ export const centralLabBosses: Boss[] = [
     stage: 1,
     notes: 'Bomb ทำลายอาวุธ — แนะนำชุดธาตุ Fire',
   },
+
+  // ── F ─────────────────────────────────────────────────────────────────────
   {
-    id: 'evil-snake-lord',
-    name: 'Evil Snake Lord',
-    element: 'Ghost',
-    elementLevel: 3,
-    race: 'Brute',
-    size: 'Large',
-    stage: 3,
-    notes: 'ใช้ Frost Driver — ป้องกัน Freeze',
+    id: 'fallen-bishop',
+    name: 'Fallen Bishop',
+    element: 'Shadow',
+    elementLevel: 2,
+    race: 'Demon',
+    size: 'Medium',
+    stage: 1,
+    notes: undefined,
   },
 
   // ── G ─────────────────────────────────────────────────────────────────────
-  {
-    id: 'general-daehyon',
-    name: 'General Daehyon',
-    element: 'Earth',
-    elementLevel: 3,
-    race: 'Demi-Human',
-    size: 'Large',
-    stage: 3,
-    notes: 'ใช้ Waterball — แนะนำชุดธาตุ Water',
-  },
   {
     id: 'ghostring',
     name: 'Ghostring',
@@ -179,6 +213,16 @@ export const centralLabBosses: Boss[] = [
     size: 'Medium',
     stage: 'mini',
     notes: undefined,
+  },
+  {
+    id: 'gioia',
+    name: 'Gioia',
+    element: 'Wind',
+    elementLevel: 4,
+    race: 'Formless',
+    size: 'Large',
+    stage: 1,
+    notes: 'แนะนำชุดธาตุ Wind',
   },
   {
     id: 'gloom-under-night',
@@ -201,18 +245,6 @@ export const centralLabBosses: Boss[] = [
     notes: 'ใช้ Shield Reflect',
   },
 
-  // ── H ─────────────────────────────────────────────────────────────────────
-  {
-    id: 'hatii',
-    name: 'Hatii',
-    element: 'Water',
-    elementLevel: 4,
-    race: 'Brute',
-    size: 'Large',
-    stage: 2,
-    notes: 'ใช้ Storm Gust — ป้องกัน Freeze, แนะนำชุดธาตุ Water',
-  },
-
   // ── I ─────────────────────────────────────────────────────────────────────
   {
     id: 'ifrit',
@@ -223,6 +255,18 @@ export const centralLabBosses: Boss[] = [
     size: 'Large',
     stage: 3,
     notes: 'ใช้ Full Divestment + Earthquake — แนะนำชุดธาตุ Fire และลด Neutral',
+  },
+
+  // ── J ─────────────────────────────────────────────────────────────────────
+  {
+    id: 'jewgoliant',
+    name: 'Jewgoliant',
+    element: 'Neutral',
+    elementLevel: 4,
+    race: 'Insect',
+    size: 'Large',
+    stage: 1,
+    notes: undefined,
   },
 
   // ── K ─────────────────────────────────────────────────────────────────────
@@ -246,48 +290,6 @@ export const centralLabBosses: Boss[] = [
     stage: 2,
     notes: 'ใช้ Waterball + Storm Gust — ป้องกัน Freeze, แนะนำชุดธาตุ Water',
   },
-  {
-    id: 'kublin',
-    name: 'Kublin',
-    element: 'Earth',
-    elementLevel: 1,
-    race: 'Demi-Human',
-    size: 'Medium',
-    stage: 2,
-    notes: undefined,
-  },
-
-  // ── L ─────────────────────────────────────────────────────────────────────
-  {
-    id: 'lady-tanee',
-    name: 'Lady Tanee',
-    element: 'Wind',
-    elementLevel: 3,
-    race: 'Plant',
-    size: 'Large',
-    stage: 1,
-    notes: undefined,
-  },
-  {
-    id: 'leak',
-    name: 'Leak',
-    element: 'Shadow',
-    elementLevel: 2,
-    race: 'Demon',
-    size: 'Large',
-    stage: 2,
-    notes: 'Slave ใช้ Divest Weapon',
-  },
-  {
-    id: 'lord-of-the-dead',
-    name: 'Lord of the Dead',
-    element: 'Shadow',
-    elementLevel: 3,
-    race: 'Demon',
-    size: 'Large',
-    stage: 2,
-    notes: undefined,
-  },
 
   // ── M ─────────────────────────────────────────────────────────────────────
   {
@@ -299,16 +301,6 @@ export const centralLabBosses: Boss[] = [
     size: 'Medium',
     stage: 'mini',
     notes: undefined,
-  },
-  {
-    id: 'maya',
-    name: 'Maya',
-    element: 'Earth',
-    elementLevel: 4,
-    race: 'Insect',
-    size: 'Large',
-    stage: 1,
-    notes: 'ทำลาย Armor',
   },
   {
     id: 'memory-of-thanatos',
@@ -330,16 +322,6 @@ export const centralLabBosses: Boss[] = [
     stage: 1,
     notes: 'ใช้ Jupitel Thunder — แนะนำชุดธาตุ Wind',
   },
-  {
-    id: 'moonlight-flower',
-    name: 'Moonlight Flower',
-    element: 'Fire',
-    elementLevel: 3,
-    race: 'Demon',
-    size: 'Medium',
-    stage: 1,
-    notes: 'ใช้ Full Divestment',
-  },
 
   // ── O ─────────────────────────────────────────────────────────────────────
   {
@@ -351,16 +333,6 @@ export const centralLabBosses: Boss[] = [
     size: 'Large',
     stage: 1,
     notes: undefined,
-  },
-  {
-    id: 'orc-lord',
-    name: 'Orc Lord',
-    element: 'Earth',
-    elementLevel: 4,
-    race: 'Demi-Human',
-    size: 'Large',
-    stage: 1,
-    notes: 'ใช้ Earthquake',
   },
   {
     id: 'osiris',
@@ -384,54 +356,52 @@ export const centralLabBosses: Boss[] = [
     stage: 2,
     notes: 'ใช้ Darkbreath',
   },
-  {
-    id: 'phreeoni',
-    name: 'Phreeoni',
-    element: 'Neutral',
-    elementLevel: 3,
-    race: 'Brute',
-    size: 'Large',
-    stage: 1,
-    notes: undefined,
-  },
-
-  // ── Q ─────────────────────────────────────────────────────────────────────
-  {
-    id: 'queen-scaraba',
-    name: 'Queen Scaraba',
-    element: 'Earth',
-    elementLevel: 3,
-    race: 'Insect',
-    size: 'Large',
-    stage: 3,
-    notes: undefined,
-  },
 
   // ── R ─────────────────────────────────────────────────────────────────────
   {
-    id: 'rsx-0806',
-    name: 'RSX 0806',
-    element: 'Neutral',
-    elementLevel: 3,
-    race: 'Formless',
+    id: 'r001-bestia',
+    name: 'R001-Bestia',
+    element: 'Shadow',
+    elementLevel: 2,
+    race: 'Brute',
     size: 'Large',
     stage: 3,
-    notes: 'ใช้ Earthquake',
+    notes: undefined,
   },
 
   // ── S ─────────────────────────────────────────────────────────────────────
   {
-    id: 'stormy-knight',
-    name: 'Stormy Knight',
-    element: 'Wind',
+    id: 'shining-teddy-bear',
+    name: 'Shining Teddy Bear',
+    element: 'Holy',
     elementLevel: 4,
     race: 'Formless',
     size: 'Large',
-    stage: 2,
-    notes: 'Spawn พร้อม Hatii 2 ตัว, ใช้ Storm Gust — ป้องกัน Freeze, แนะนำชุดธาตุ Water',
+    stage: 1,
+    notes: 'Holy element — แนะนำชุดธาตุ Shadow',
   },
 
   // ── T ─────────────────────────────────────────────────────────────────────
+  {
+    id: 'the-one',
+    name: 'The One',
+    element: 'Neutral',
+    elementLevel: 3,
+    race: 'Formless',
+    size: 'Large',
+    stage: 3,
+    notes: undefined,
+  },
+  {
+    id: 'timeholder',
+    name: 'Timeholder',
+    element: 'Neutral',
+    elementLevel: 4,
+    race: 'Demon',
+    size: 'Large',
+    stage: 1,
+    notes: undefined,
+  },
   {
     id: 'toad',
     name: 'Toad',
@@ -453,6 +423,18 @@ export const centralLabBosses: Boss[] = [
     notes: 'ใช้ Waterball — แนะนำชุดธาตุ Water',
   },
 
+  // ── U ─────────────────────────────────────────────────────────────────────
+  {
+    id: 'ultra-limacina',
+    name: 'Ultra Limacina',
+    element: 'Water',
+    elementLevel: 3,
+    race: 'Fish',
+    size: 'Large',
+    stage: 3,
+    notes: 'ป้องกัน Freeze',
+  },
+
   // ── V ─────────────────────────────────────────────────────────────────────
   {
     id: 'vagabond-wolf',
@@ -465,6 +447,16 @@ export const centralLabBosses: Boss[] = [
     notes: undefined,
   },
   {
+    id: 'valkyrie-ingrid',
+    name: 'Valkyrie Ingrid',
+    element: 'Water',
+    elementLevel: 4,
+    race: 'Angel',
+    size: 'Medium',
+    stage: 3,
+    notes: 'ป้องกัน Freeze',
+  },
+  {
     id: 'valkyrie-randgris',
     name: 'Valkyrie Randgris',
     element: 'Holy',
@@ -473,6 +465,16 @@ export const centralLabBosses: Boss[] = [
     size: 'Large',
     stage: 3,
     notes: 'ใช้ Lord of Vermillion + Earthquake — แนะนำชุดธาตุ Holy',
+  },
+  {
+    id: 'valkyrie-reginleif',
+    name: 'Valkyrie Reginleif',
+    element: 'Fire',
+    elementLevel: 4,
+    race: 'Angel',
+    size: 'Medium',
+    stage: 3,
+    notes: 'แนะนำชุดธาตุ Fire',
   },
   {
     id: 'vocal',

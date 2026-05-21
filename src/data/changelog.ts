@@ -22,6 +22,13 @@ export interface ChangelogEntry {
  */
 export const changelog: ChangelogEntry[] = [
   {
+    version: '0.1.1',
+    date: '2026-05-21',
+    changes: [
+      { type: 'improve', description: 'อัปเดตข้อมูลบอสใน Central Lab Helper ตาม patch 6 พฤษภาคม 2569 — แทนที่ 18 บอสด้วยรายชื่อใหม่พร้อม race/element/size ที่ถูกต้อง' },
+    ],
+  },
+  {
     version: '0.1.0',
     date: '2026-05-20',
     changes: [
