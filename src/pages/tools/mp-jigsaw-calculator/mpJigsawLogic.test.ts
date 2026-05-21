@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { calcBox, BOXES } from './mpJigsawLogic'
 
 const [box1, box2, box3] = BOXES
-// box1: fromFirst100=31, levelPerBox=7, specialLevel=350, jigsawPerBox=2
+// box1: fromFirst100=32, levelPerBox=7, specialLevel=350, jigsawPerBox=2
 // box2: fromFirst100=11, levelPerBox=19, specialLevel=800, jigsawPerBox=3
 // box3: fromFirst100=1,  levelPerBox=41, specialLevel=1500, jigsawPerBox=5
 
@@ -10,17 +10,17 @@ describe('calcBox', () => {
   describe('Box 1 (levelPerBox=7, specialLevel=350)', () => {
     it('level 101: 0 fromAbove100, no bonus', () => {
       const r = calcBox(101, box1)
-      expect(r.fromFirst100).toBe(31)
+      expect(r.fromFirst100).toBe(32)
       expect(r.fromAbove100).toBe(0)  // floor(1/7) = 0
       expect(r.fromBonus).toBe(0)
-      expect(r.totalBoxes).toBe(31)
-      expect(r.totalJigsaw).toBe(62)  // 31 × 2
+      expect(r.totalBoxes).toBe(32)
+      expect(r.totalJigsaw).toBe(64)  // 32 × 2
     })
 
     it('level 107: exactly 1 batch of 7', () => {
       const r = calcBox(107, box1)
       expect(r.fromAbove100).toBe(1)  // floor(7/7) = 1
-      expect(r.totalBoxes).toBe(32)
+      expect(r.totalBoxes).toBe(33)
     })
 
     it('level 200: floor(100/7) = 14 fromAbove100', () => {
@@ -37,7 +37,7 @@ describe('calcBox', () => {
       const r = calcBox(350, box1)
       expect(r.fromBonus).toBe(30)
       expect(r.fromAbove100).toBe(35)   // floor(250/7) = 35
-      expect(r.totalBoxes).toBe(31 + 35 + 30)
+      expect(r.totalBoxes).toBe(32 + 35 + 30)
     })
   })
 

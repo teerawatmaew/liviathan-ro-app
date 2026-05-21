@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils'
 
 import type { RefineEquipType } from '@/types'
 import { REFINE_RATES, BSB_COSTS, BSB_EVENT_COSTS, getRefineSuccessRate } from '@/data/refine-rates'
+import { EVENT_REFINE_ITEMS, getEventRefineItem, isEventRefineType, getEffectiveEventRate } from '@/data/event-refine-items'
 import { getOreName, rollOne } from './refineSimulatorLogic'
 import RefineHistoryTable from './RefineHistoryTable'
 
@@ -31,7 +32,7 @@ export interface SimAttempt {
   bsbUsed: number
 }
 
-const EQUIP_TYPE_OPTIONS: { value: RefineEquipType; label: string }[] = [
+const STANDARD_OPTIONS: { value: string; label: string }[] = [
   { value: 'weapon_lv1', label: 'อาวุธ Lv.1 (Oridecon)' },
   { value: 'weapon_lv2', label: 'อาวุธ Lv.2 (Oridecon)' },
   { value: 'weapon_lv3', label: 'อาวุธ Lv.3 (Oridecon)' },
@@ -76,7 +77,7 @@ function StatTile({
 }
 
 export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator')  // ── Settings ─────────────────────────────────────────────────────────────
-  const [equipType, setEquipType] = useLocalStorage<RefineEquipType>('lro-refine-equipType', 'weapon_lv4')
+  const [equipType, setEquipType] = useLocalStorage<string>('lro-refine-equipType', 'weapon_lv4')
   const [oreType, setOreType] = useLocalStorage<'normal' | 'enrichedHd'>('lro-refine-oreType', 'enrichedHd')
   const [startLevel, setStartLevel] = useLocalStorage('lro-refine-startLevel', 0)
   const [targetLevel, setTargetLevel] = useLocalStorage('lro-refine-targetLevel', 10)
@@ -90,19 +91,27 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
   const [isBroken, setIsBroken] = useState(false)
   const [counter, setCounter] = useState(0)
   const [lastResult, setLastResult] = useState<'success' | 'fail' | 'break' | 'limit' | 'ether_pause' | null>(null)
-  const [lastRunLimit, setLastRunLimit] = useState<number | null>(null)
-
+  const [lastRunLimit, setLastRunLimit] = useState<number | null>(null)  /** pity bonus ที่สะสมไว้ต่อ level (key = fromLevel, value = % ที่สะสม) */
+  const [pityByLevel, setPityByLevel] = useState<Record<number, number>>({})
   // ── Derived ───────────────────────────────────────────────────────────────
-  const rateData = REFINE_RATES[equipType]
-  const maxLevel = rateData.maxLevel
-  const safetyLevel = rateData.safetyLevel
+  const isEventType = isEventRefineType(equipType)
+  const eventItem = isEventType ? getEventRefineItem(equipType) : undefined
+  const rateData = !isEventType ? REFINE_RATES[equipType as RefineEquipType] : null
+  const maxLevel = isEventType ? (eventItem?.maxLevel ?? 20) : rateData!.maxLevel
+  const safetyLevel = isEventType ? (eventItem?.safetyLevel ?? 0) : rateData!.safetyLevel
   const isEtherType = equipType === 'weapon_lv5' || equipType === 'armor_lv2'
   const reachedTarget = currentLevel >= targetLevel
   const reachedMax = currentLevel >= maxLevel
   const canAttempt = !isBroken && !reachedTarget && !reachedMax
 
   const nextRate =
-    canAttempt ? (getRefineSuccessRate(equipType, currentLevel, oreType) ?? null) : null
+    canAttempt
+      ? isEventType && eventItem
+        ? getEffectiveEventRate(eventItem, currentLevel, pityByLevel[currentLevel] ?? 0)
+        : isEventType
+          ? null
+          : (getRefineSuccessRate(equipType as RefineEquipType, currentLevel, oreType) ?? null)
+      : null
 
   const [totalStats, setTotalStats] = useState({
     total: 0,
@@ -122,21 +131,45 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
   }
 
   const rateTableData = useMemo(() => {
+    if (isEventType && eventItem) {
+      return Array.from({ length: eventItem.maxLevel }, (_, i) => ({
+        fromLevel: i,
+        normalRate: eventItem.rates[i] ?? 0,
+        enrichedRate: null as number | null,
+        isSafe: i < eventItem.safetyLevel,
+        bsbCost: null as number | null,
+        oreCount: eventItem.oreCount(i),
+        pityCap: eventItem.pityCaps?.[i] ?? null,
+      }))
+    }
     return Array.from({ length: maxLevel }, (_, i) => ({
       fromLevel: i,
-      normalRate: rateData.normal[i] ?? 0,
-      enrichedRate: rateData.enrichedHd[i] ?? 0,
+      normalRate: rateData!.normal[i] ?? 0,
+      enrichedRate: rateData!.enrichedHd[i] ?? 0,
       isSafe: i < safetyLevel,
       bsbCost: BSB_COSTS[i] ?? null,
+      oreCount: null as number | null,
+      pityCap: null as number | null,
     }))
-  }, [maxLevel, safetyLevel, rateData])
+  }, [maxLevel, safetyLevel, rateData, isEventType, eventItem])
 
-  const rollParams = { equipType, oreType, noBreak, noLevelLoss, useEventBsb }
+  const rollParams = {
+    equipType,
+    oreType,
+    noBreak: isEventType ? true : noBreak,
+    noLevelLoss: isEventType ? true : noLevelLoss,
+    useEventBsb,
+    pityStack: pityByLevel[currentLevel] ?? 0,
+  }
 
   // ── Handlers ──────────────────────────────────────────────────────────────
   function handleSingleAttempt() {
     if (!canAttempt) return
     const result = rollOne(currentLevel, rollParams)
+    // update pity bonus เมื่อล้มเหลว
+    if (result.newPityStack !== undefined && !result.success) {
+      setPityByLevel((prev) => ({ ...prev, [currentLevel]: result.newPityStack! }))
+    }
     const newId = counter + 1
     const attempt: SimAttempt = {
       id: newId,
@@ -169,6 +202,8 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
   function handleBatchRun(maxIter: number) {
     if (!canAttempt) return
     let lvl = currentLevel
+    // ติดตาม pity bonus แต่ละ level เพื่อใช้ใน batch
+    const pityByLvl: Record<number, number> = { ...pityByLevel }
     // ether type ที่เริ่มต่ำกว่า +10: จะ pause อัตโนมัติเมื่อถึง +10
     const startedBelowEther =
       (equipType === 'weapon_lv5' || equipType === 'armor_lv2') &&
@@ -185,7 +220,11 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
         hitEtherThreshold = true
         break
       }
-      const result = rollOne(lvl, rollParams)
+      const result = rollOne(lvl, { ...rollParams, pityStack: pityByLvl[lvl] ?? 0 })
+      // update pity bonus per level
+      if (result.newPityStack !== undefined && !result.success) {
+        pityByLvl[lvl] = result.newPityStack
+      }
       cnt++
       newAttempts.push({
         id: cnt,
@@ -204,6 +243,7 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
     const hitLimit = !broken && !hitEtherThreshold && lvl < targetLevel
     setCounter(cnt)
     setCurrentLevel(lvl)
+    setPityByLevel(pityByLvl)
     setAttempts((prev) => [...[...newAttempts].reverse(), ...prev].slice(0, 500))
     setLastResult(
       broken ? 'break'
@@ -229,13 +269,14 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
   }
 
   function handleAutoRun() {
-    handleBatchRun(50000)
+    handleBatchRun(5000)
   }
 
   function resetSim(resetHistory = false) {
     setCurrentLevel(startLevel)
     setIsBroken(false)
     setLastResult(null)
+    setPityByLevel({})
     if (resetHistory) {
       setAttempts([])
       setCounter(0)
@@ -244,12 +285,15 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
   }
 
   function handleEquipTypeChange(val: string) {
-    const newType = val as RefineEquipType
-    const newMax = REFINE_RATES[newType].maxLevel
-    const newIsEther = newType === 'weapon_lv5' || newType === 'armor_lv2'
-    setEquipType(newType)
-    // weapon_lv5 / armor_lv2: default noBreak=true เพื่อป้องกันเสียหายระหว่าง batch run
+    const newEventItem = getEventRefineItem(val)
+    const newIsEvent = !!newEventItem
+    const newIsEther = val === 'weapon_lv5' || val === 'armor_lv2'
+    const newMax = newIsEvent
+      ? (newEventItem?.maxLevel ?? 20)
+      : REFINE_RATES[val as RefineEquipType].maxLevel
+    setEquipType(val)
     setNoBreak(newIsEther)
+    setPityByLevel({})
     const newStart = Math.min(startLevel, newMax - 1)
     const newTarget = Math.min(Math.max(targetLevel, newStart + 1), newMax)
     setStartLevel(newStart)
@@ -269,6 +313,7 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
     setCurrentLevel(lvl)
     setIsBroken(false)
     setLastResult(null)
+    setPityByLevel({})
   }
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -298,11 +343,23 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {EQUIP_TYPE_OPTIONS.map((o) => (
+                  {STANDARD_OPTIONS.map((o) => (
                     <SelectItem key={o.value} value={o.value}>
                       {o.label}
                     </SelectItem>
                   ))}
+                  {EVENT_REFINE_ITEMS.length > 0 && (
+                    <>
+                      <SelectItem value="__sep__" disabled className="text-xs text-muted-foreground/60 font-medium py-1">
+                        ── Event Items ──
+                      </SelectItem>
+                      {EVENT_REFINE_ITEMS.map((item) => (
+                        <SelectItem key={item.id} value={item.id}>
+                          {item.name}
+                        </SelectItem>
+                      ))}
+                    </>
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -364,93 +421,111 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
             <div className="rounded-lg border p-3 space-y-3 bg-muted/20">
               <div className="space-y-1.5">
                 <div className="text-xs font-medium text-muted-foreground">แร่ที่ใช้</div>
-                <div className="flex gap-2">
-                  <Button
-                    variant={oreType === 'normal' ? 'default' : 'outline'}
-                    size="sm"
-                    className="flex-1 text-xs h-8"
-                    onClick={() => setOreType('normal')}
-                  >
-                    ธรรมดา
-                  </Button>
-                  <Button
-                    variant={oreType === 'enrichedHd' ? 'default' : 'outline'}
-                    size="sm"
-                    className="flex-1 text-xs h-8"
-                    onClick={() => setOreType('enrichedHd')}
-                  >
-                    Enriched / HD
-                  </Button>
-                </div>
+                {isEventType ? (
+                  <div className="flex items-center gap-2 rounded-md bg-muted/30 border px-3 py-2">
+                    <Sparkles className="size-3.5 text-yellow-400 shrink-0" />
+                    <span className="text-xs text-yellow-300">
+                      {eventItem ? (typeof eventItem.oreLabel === 'string' ? eventItem.oreLabel : eventItem.oreLabel(currentLevel)) : ''}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Button
+                      variant={oreType === 'normal' ? 'default' : 'outline'}
+                      size="sm"
+                      className="flex-1 text-xs h-8"
+                      onClick={() => setOreType('normal')}
+                    >
+                      ธรรมดา
+                    </Button>
+                    <Button
+                      variant={oreType === 'enrichedHd' ? 'default' : 'outline'}
+                      size="sm"
+                      className="flex-1 text-xs h-8"
+                      onClick={() => setOreType('enrichedHd')}
+                    >
+                      Enriched / HD
+                    </Button>
+                  </div>
+                )}
               </div>
               <div className="space-y-1.5">
                 <div className="text-xs font-medium text-muted-foreground">การป้องกันเมื่อล้มเหลว</div>
-                <div className="flex gap-2 flex-wrap">
-                  <button
-                    onClick={() => setNoBreak(!noBreak)}
-                    className={cn(
-                      'flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs transition-colors cursor-pointer select-none',
-                      noBreak
-                        ? 'border-blue-500 bg-blue-500/10 text-blue-400'
-                        : 'border-border text-muted-foreground hover:border-muted-foreground',
-                    )}
-                  >
-                    <Shield className="size-3.5" />
-                    ไม่เสียหาย (No Break)
-                  </button>
-                  <button
-                    onClick={() => setNoLevelLoss(!noLevelLoss)}
-                    className={cn(
-                      'flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs transition-colors cursor-pointer select-none',
-                      noLevelLoss
-                        ? 'border-amber-500 bg-amber-500/10 text-amber-400'
-                        : 'border-border text-muted-foreground hover:border-muted-foreground',
-                    )}
-                  >
-                    <Shield className="size-3.5" />
-                    ไม่ลดขั้น (BSB)
-                  </button>
-                  <button
-                    onClick={() => setUseEventBsb(!useEventBsb)}
-                    disabled={!noLevelLoss}
-                    className={cn(
-                      'flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs transition-colors cursor-pointer select-none',
-                      !noLevelLoss
-                        ? 'opacity-30 cursor-not-allowed border-border text-muted-foreground'
-                        : useEventBsb
-                          ? 'border-pink-500 bg-pink-500/10 text-pink-400'
-                          : 'border-border text-muted-foreground hover:border-muted-foreground',
-                    )}
-                  >
-                    <Sparkles className="size-3.5" />
-                    BSB กิจกรรม
-                  </button>
-                </div>
-                <div className="min-h-[1rem] text-xs leading-relaxed">
-                  {isEtherType && currentLevel < 10 && !noLevelLoss && (
-                    <span className="text-sky-400/80">
-                      {equipType === 'weapon_lv5' ? 'อาวุธ Lv.5' : 'เกราะ Lv.2'} (&lt;+10): ไม่เสียหายโดยอัตโนมัติ
-                      {' '}— ธรรมดา −3 ขั้น · Enriched/HD −1 ขั้น
-                    </span>
-                  )}
-                  {isEtherType && currentLevel >= 10 && !noBreak && !noLevelLoss && (
-                    <span className="text-red-400/70">+10 ขึ้นไป = อาจติดได้ — เลือกป้องกันหากต้องการ</span>
-                  )}
-                  {!isEtherType && !noBreak && !noLevelLoss && (
-                    <span className="text-red-400/70">ไม่เลือกป้องกัน = ไอเทมเสียหาย (หาย)</span>
-                  )}
-                  {!isEtherType && noBreak && !noLevelLoss && (
-                    <span className="text-blue-400/70">ล้มเหลว = ลดลง 1 ขั้น (ไม่เสียหาย)</span>
-                  )}
-                  {isEtherType && noBreak && currentLevel >= 10 && !noLevelLoss && (
-                    <span className="text-blue-400/70">ล้มเหลว = ลดลง 1 ขั้น (ไม่เสียหาย)</span>
-                  )}
-                  {noLevelLoss && (
-                    <span className={useEventBsb ? 'text-pink-400/70' : 'text-amber-400/70'}>
-                      BSB{useEventBsb ? ' กิจกรรม' : ''} จะถูกนับเฉพาะเมื่อ ≥+{safetyLevel} · มีข้อมูลถึง +13
-                    </span>
-                  )}
-                </div>
+                {isEventType ? (
+                  <div className="flex items-center gap-2 rounded-md bg-green-500/10 border border-green-500/30 px-3 py-2">
+                    <Shield className="size-3.5 text-green-400 shrink-0" />
+                    <span className="text-xs text-green-400">ล้มเหลว = ไม่ลดขั้น + ไม่เสียหาย (อัตโนมัติ)</span>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex gap-2 flex-wrap">
+                      <button
+                        onClick={() => setNoBreak(!noBreak)}
+                        className={cn(
+                          'flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs transition-colors cursor-pointer select-none',
+                          noBreak
+                            ? 'border-blue-500 bg-blue-500/10 text-blue-400'
+                            : 'border-border text-muted-foreground hover:border-muted-foreground',
+                        )}
+                      >
+                        <Shield className="size-3.5" />
+                        ไม่เสียหาย (No Break)
+                      </button>
+                      <button
+                        onClick={() => setNoLevelLoss(!noLevelLoss)}
+                        className={cn(
+                          'flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs transition-colors cursor-pointer select-none',
+                          noLevelLoss
+                            ? 'border-amber-500 bg-amber-500/10 text-amber-400'
+                            : 'border-border text-muted-foreground hover:border-muted-foreground',
+                        )}
+                      >
+                        <Shield className="size-3.5" />
+                        ไม่ลดขั้น (BSB)
+                      </button>
+                      <button
+                        onClick={() => setUseEventBsb(!useEventBsb)}
+                        disabled={!noLevelLoss}
+                        className={cn(
+                          'flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs transition-colors cursor-pointer select-none',
+                          !noLevelLoss
+                            ? 'opacity-30 cursor-not-allowed border-border text-muted-foreground'
+                            : useEventBsb
+                              ? 'border-pink-500 bg-pink-500/10 text-pink-400'
+                              : 'border-border text-muted-foreground hover:border-muted-foreground',
+                        )}
+                      >
+                        <Sparkles className="size-3.5" />
+                        BSB กิจกรรม
+                      </button>
+                    </div>
+                    <div className="min-h-[1rem] text-xs leading-relaxed">
+                      {isEtherType && currentLevel < 10 && !noLevelLoss && (
+                        <span className="text-sky-400/80">
+                          {equipType === 'weapon_lv5' ? 'อาวุธ Lv.5' : 'เกราะ Lv.2'} (&lt;+10): ไม่เสียหายโดยอัตโนมัติ
+                          {' '}— ธรรมดา −3 ขั้น · Enriched/HD −1 ขั้น
+                        </span>
+                      )}
+                      {isEtherType && currentLevel >= 10 && !noBreak && !noLevelLoss && (
+                        <span className="text-red-400/70">+10 ขึ้นไป = อาจติดได้ — เลือกป้องกันหากต้องการ</span>
+                      )}
+                      {!isEtherType && !noBreak && !noLevelLoss && (
+                        <span className="text-red-400/70">ไม่เลือกป้องกัน = ไอเทมเสียหาย (หาย)</span>
+                      )}
+                      {!isEtherType && noBreak && !noLevelLoss && (
+                        <span className="text-blue-400/70">ล้มเหลว = ลดลง 1 ขั้น (ไม่เสียหาย)</span>
+                      )}
+                      {isEtherType && noBreak && currentLevel >= 10 && !noLevelLoss && (
+                        <span className="text-blue-400/70">ล้มเหลว = ลดลง 1 ขั้น (ไม่เสียหาย)</span>
+                      )}
+                      {noLevelLoss && (
+                        <span className={useEventBsb ? 'text-pink-400/70' : 'text-amber-400/70'}>
+                          BSB{useEventBsb ? ' กิจกรรม' : ''} จะถูกนับเฉพาะเมื่อ ≥+{safetyLevel} · มีข้อมูลถึง +13
+                        </span>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
@@ -491,6 +566,11 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
                       โอกาสสำเร็จ: {nextRate}%
                     </div>
                   )}
+                  {isEventType && eventItem?.pityPerFail && !reachedTarget && (pityByLevel[currentLevel] ?? 0) > 0 && (
+                    <div className="text-xs text-purple-400">
+                      (base {eventItem.rates[currentLevel]}% + {pityByLevel[currentLevel]} pity)
+                    </div>
+                  )}
                 </>
               )}
             </div>
@@ -528,11 +608,11 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
                 <StepForward className="size-3.5" />
                 ×1
               </Button>
-              <Button onClick={() => handleBatchRun(100)} disabled={!canAttempt} size="sm" variant="outline" className="gap-1.5">
-                ×100
+              <Button onClick={() => handleBatchRun(10)} disabled={!canAttempt} size="sm" variant="outline" className="gap-1.5">
+                ×10
               </Button>
-              <Button onClick={() => handleBatchRun(1000)} disabled={!canAttempt} size="sm" variant="outline" className="gap-1.5">
-                ×1,000
+              <Button onClick={() => handleBatchRun(50)} disabled={!canAttempt} size="sm" variant="outline" className="gap-1.5">
+                ×50
               </Button>
             </div>
             <Button
@@ -639,16 +719,25 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
                     ระดับ
                   </th>
                   <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">
-                    แร่ธรรมดา
+                    {isEventType ? 'อัตราสำเร็จ' : 'แร่ธรรมดา'}
                   </th>
+                  {isEventType && !!eventItem?.pityPerFail && (
+                    <th className="px-3 py-2 text-center text-xs font-medium text-purple-400">
+                      สูงสุด (Pity)
+                    </th>
+                  )}
+                  {!isEventType && (
+                    <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">
+                      Enriched / HD
+                    </th>
+                  )}
+                  {!isEventType && (
+                    <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">
+                      BSB ต่อครั้ง{useEventBsb && <span className="ml-1 text-pink-400">♦กิจกรรม</span>}
+                    </th>
+                  )}
                   <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">
-                    Enriched / HD
-                  </th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">
-                    BSB ต่อครั้ง{useEventBsb && <span className="ml-1 text-pink-400">♦กิจกรรม</span>}
-                  </th>
-                  <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">
-                    แร่ที่ใช้
+                    {isEventType ? 'เหล็กไหล / ครั้ง' : 'แร่ที่ใช้'}
                   </th>
                 </tr>
               </thead>
@@ -684,36 +773,52 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
                     >
                       {row.normalRate}%
                     </td>
-                    <td
-                      className={cn(
-                        'px-3 py-1.5 text-center tabular-nums',
-                        row.enrichedRate === 100
-                          ? 'text-green-400'
-                          : row.enrichedRate < 20
-                            ? 'text-red-400'
-                            : 'text-yellow-400',
-                      )}
-                    >
-                      {row.enrichedRate}%
-                    </td>
-                    <td className="px-3 py-1.5 text-center text-xs tabular-nums">
-                      {row.bsbCost !== null ? (
-                        useEventBsb ? (
-                          <span className="flex flex-col items-center leading-tight gap-0.5">
-                            <span className="text-muted-foreground/40 line-through">{row.bsbCost}</span>
-                            <span className="text-pink-400 font-medium">{BSB_EVENT_COSTS[row.fromLevel] ?? row.bsbCost}</span>
-                          </span>
+                    {isEventType && !!eventItem?.pityPerFail && (
+                      <td className="px-3 py-1.5 text-center tabular-nums">
+                        {row.pityCap !== null ? (
+                          <span className="text-purple-400 font-medium">{row.pityCap}%</span>
                         ) : (
-                          <span className="text-amber-400 font-medium">{row.bsbCost}</span>
-                        )
-                      ) : row.fromLevel >= safetyLevel ? (
-                        <span className="text-muted-foreground/40">?</span>
-                      ) : (
-                        <span className="text-muted-foreground/40">—</span>
-                      )}
-                    </td>
+                          <span className="text-muted-foreground/40">—</span>
+                        )}
+                      </td>
+                    )}
+                    {!isEventType && (
+                      <td
+                        className={cn(
+                          'px-3 py-1.5 text-center tabular-nums',
+                          (row.enrichedRate ?? 0) === 100
+                            ? 'text-green-400'
+                            : (row.enrichedRate ?? 0) < 20
+                              ? 'text-red-400'
+                              : 'text-yellow-400',
+                        )}
+                      >
+                        {row.enrichedRate}%
+                      </td>
+                    )}
+                    {!isEventType && (
+                      <td className="px-3 py-1.5 text-center text-xs tabular-nums">
+                        {row.bsbCost !== null ? (
+                          useEventBsb ? (
+                            <span className="flex flex-col items-center leading-tight gap-0.5">
+                              <span className="text-muted-foreground/40 line-through">{row.bsbCost}</span>
+                              <span className="text-pink-400 font-medium">{BSB_EVENT_COSTS[row.fromLevel] ?? row.bsbCost}</span>
+                            </span>
+                          ) : (
+                            <span className="text-amber-400 font-medium">{row.bsbCost}</span>
+                          )
+                        ) : row.fromLevel >= safetyLevel ? (
+                          <span className="text-muted-foreground/40">?</span>
+                        ) : (
+                          <span className="text-muted-foreground/40">—</span>
+                        )}
+                      </td>
+                    )}
                     <td className="px-3 py-1.5 text-center text-xs text-muted-foreground whitespace-nowrap">
-                      {getOreName(equipType, row.fromLevel, 'normal')}
+                      {isEventType
+                        ? <span className="tabular-nums text-yellow-300 font-medium">{row.oreCount}</span>
+                        : getOreName(equipType, row.fromLevel, 'normal')
+                      }
                     </td>
                   </tr>
                 ))}

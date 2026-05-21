@@ -198,4 +198,110 @@ describe('rollOne', () => {
     expect(r.oreName).toBe('Enriched Oridecon')
     expect(r.successRate).toBe(20) // REFINE_RATES.weapon_lv4.enrichedHd[9] = 20
   })
+
+  describe('event items (no pity)', () => {
+    const ayothayaParams: RollParams = {
+      equipType: 'event_ayothaya_helm',
+      oreType: 'enrichedHd',
+      noBreak: true,
+      noLevelLoss: true,
+    }
+
+    it('success: level increments, bsbUsed=0, no break', () => {
+      vi.spyOn(Math, 'random').mockReturnValue(0)
+      const r = rollOne(5, ayothayaParams) // rate=80%, 0*100=0 < 80 → success
+      expect(r.success).toBe(true)
+      expect(r.newLevel).toBe(6)
+      expect(r.broke).toBe(false)
+      expect(r.bsbUsed).toBe(0)
+    })
+
+    it('fail: stays at same level, no break', () => {
+      vi.spyOn(Math, 'random').mockReturnValue(0.9999) // 99.99 >= 80 → fail
+      const r = rollOne(5, ayothayaParams)
+      expect(r.success).toBe(false)
+      expect(r.newLevel).toBe(5)
+      expect(r.broke).toBe(false)
+    })
+
+    it('fail: newPityStack is undefined (no pity mechanic)', () => {
+      vi.spyOn(Math, 'random').mockReturnValue(0.9999)
+      const r = rollOne(5, ayothayaParams)
+      expect(r.newPityStack).toBeUndefined()
+    })
+
+    it('oreName returns event ore label', () => {
+      vi.spyOn(Math, 'random').mockReturnValue(0)
+      const r = rollOne(3, ayothayaParams)
+      expect(r.oreName).toBe('[Event] เหล็กไหลอโยธยา')
+    })
+  })
+
+  describe('event items with pity ([MP] Snow Flower Shadow)', () => {
+    const snowParams: RollParams = {
+      equipType: 'event_mp_snow_flower_shadow',
+      oreType: 'enrichedHd',
+      noBreak: true,
+      noLevelLoss: true,
+    }
+
+    it('success: level increments, newPityStack=0', () => {
+      vi.spyOn(Math, 'random').mockReturnValue(0) // 0 < 40 → success
+      const r = rollOne(4, snowParams) // base rate 40%
+      expect(r.success).toBe(true)
+      expect(r.newLevel).toBe(5)
+      expect(r.newPityStack).toBe(0)
+    })
+
+    it('fail: newPityStack increments by 1', () => {
+      vi.spyOn(Math, 'random').mockReturnValue(0.9999) // 99.99 >= 40 → fail
+      const r = rollOne(4, { ...snowParams, pityStack: 0 })
+      expect(r.success).toBe(false)
+      expect(r.newLevel).toBe(4)
+      expect(r.newPityStack).toBe(1)
+    })
+
+    it('fail: pity accumulates from existing stack', () => {
+      vi.spyOn(Math, 'random').mockReturnValue(0.9999)
+      const r = rollOne(4, { ...snowParams, pityStack: 10 })
+      expect(r.newPityStack).toBe(11)
+    })
+
+    it('fail: pity capped at pityCap - baseRate (level 4: cap=80, base=40 → max pity=40)', () => {
+      vi.spyOn(Math, 'random').mockReturnValue(0.9999)
+      const r = rollOne(4, { ...snowParams, pityStack: 39 }) // already at 39, cap is 40
+      expect(r.newPityStack).toBe(40) // 39+1=40, capped at 80-40=40
+    })
+
+    it('fail: pity does not exceed cap (already at cap)', () => {
+      vi.spyOn(Math, 'random').mockReturnValue(0.9999)
+      const r = rollOne(4, { ...snowParams, pityStack: 40 }) // already at max
+      expect(r.newPityStack).toBe(40) // stays at 40
+    })
+
+    it('successRate reflects base + pityStack', () => {
+      vi.spyOn(Math, 'random').mockReturnValue(0.9999)
+      const r = rollOne(4, { ...snowParams, pityStack: 15 }) // base 40 + 15 pity = 55
+      expect(r.successRate).toBe(55)
+    })
+
+    it('successRate capped at pityCap (level 4 cap=80)', () => {
+      vi.spyOn(Math, 'random').mockReturnValue(0.9999)
+      const r = rollOne(4, { ...snowParams, pityStack: 50 }) // base 40 + 50 = 90, capped at 80
+      expect(r.successRate).toBe(80)
+    })
+
+    it('level within safety zone: no pity (rate 100%, pityCap=null)', () => {
+      vi.spyOn(Math, 'random').mockReturnValue(0) // should always succeed
+      const r = rollOne(0, { ...snowParams, pityStack: 5 }) // rate=100, no pity cap
+      expect(r.success).toBe(true)
+      expect(r.successRate).toBe(100)
+    })
+
+    it('pityStack defaults to 0 when not provided', () => {
+      vi.spyOn(Math, 'random').mockReturnValue(0.9999)
+      const r = rollOne(4, snowParams) // no pityStack in params
+      expect(r.newPityStack).toBe(1) // 0 + 1
+    })
+  })
 })

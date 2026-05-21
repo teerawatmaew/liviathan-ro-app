@@ -1,5 +1,6 @@
 import type { RefineEquipType } from '@/types'
 import { BSB_COSTS, BSB_EVENT_COSTS, getRefineSuccessRate } from '@/data/refine-rates'
+import { getEventRefineItem, getEventOreLabel, getEffectiveEventRate, isEventRefineType } from '@/data/event-refine-items'
 
 export interface RollResult {
   newLevel: number
@@ -8,21 +9,30 @@ export interface RollResult {
   bsbUsed: number
   oreName: string
   successRate: number
+  /** อัปเดต pity bonus หลัง roll นี้ (เฉพาะ event items ที่มี pityPerFail) */
+  newPityStack?: number
 }
 
 export interface RollParams {
-  equipType: RefineEquipType
+  /** RefineEquipType หรือ event item id (string) */
+  equipType: string
   oreType: 'normal' | 'enrichedHd'
   noBreak: boolean
   noLevelLoss: boolean
   useEventBsb?: boolean
+  /** pity bonus ที่สะสมไว้ที่ level นี้ (เฉพาะ event items ที่มี pityPerFail) */
+  pityStack?: number
 }
 
 export function getOreName(
-  equipType: RefineEquipType,
+  equipType: string,
   fromLevel: number,
   oreType: 'normal' | 'enrichedHd',
 ): string {
+  // Event items มี ore ของตัวเอง
+  const eventItem = getEventRefineItem(equipType)
+  if (eventItem) return getEventOreLabel(eventItem, fromLevel)
+
   const isHigh = fromLevel >= 10
   if (oreType === 'normal') {
     if (equipType === 'weapon_lv5') return 'Etherdeocon'
@@ -48,8 +58,31 @@ export function getOreName(
  */
 export function rollOne(lvl: number, params: RollParams): RollResult {
   const { equipType, oreType, noBreak, noLevelLoss } = params
+
+  // ── Event item: built-in no-break + no-level-loss, อัตราจาก config ────────
+  if (isEventRefineType(equipType)) {
+    const eventItem = getEventRefineItem(equipType)!
+    const pityStack = params.pityStack ?? 0
+    const effectiveRate = getEffectiveEventRate(eventItem, lvl, pityStack)
+    const oreName = getEventOreLabel(eventItem, lvl)
+    const success = Math.random() * 100 < effectiveRate
+    if (success) {
+      return { newLevel: lvl + 1, broke: false, success: true, bsbUsed: 0, oreName, successRate: effectiveRate, newPityStack: 0 }
+    }
+    // เมื่อล้มเหลว: เพิ่ม pity bonus สำหรับ level นี้ (ถ้า item มี pity mechanic)
+    let newPityStack: number | undefined
+    const perFail = eventItem.pityPerFail ?? 0
+    if (perFail > 0 && eventItem.pityCaps) {
+      const cap = eventItem.pityCaps[lvl] ?? null
+      const baseRate = eventItem.rates[lvl] ?? 100
+      newPityStack = cap !== null ? Math.min(pityStack + perFail, cap - baseRate) : pityStack + perFail
+    }
+    return { newLevel: lvl, broke: false, success: false, bsbUsed: 0, oreName, successRate: effectiveRate, newPityStack }
+  }
+
+  // ── Standard equipment ────────────────────────────────────────────────────
   const isEtherType = equipType === 'weapon_lv5' || equipType === 'armor_lv2'
-  const rate = getRefineSuccessRate(equipType, lvl, oreType) ?? 100
+  const rate = getRefineSuccessRate(equipType as RefineEquipType, lvl, oreType) ?? 100
   const success = Math.random() * 100 < rate
   const oreName = getOreName(equipType, lvl, oreType)
 

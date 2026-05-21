@@ -22,6 +22,19 @@ export interface ChangelogEntry {
  */
 export const changelog: ChangelogEntry[] = [
   {
+    version: '0.4.0',
+    date: '2026-05-21',
+    changes: [
+      { type: 'feat', description: 'เพิ่มระบบ Event Item ใน Refine Simulator — รองรับไอเทม event ที่มีกลไกพิเศษแยกจากอุปกรณ์มาตรฐาน' },
+      { type: 'feat', description: 'เพิ่ม [Event] Ayothaya Helm — ล้มเหลวไม่ลดขั้น ไม่เสียหาย ใช้ [Event] เหล็กไหลอโยธยา' },
+      { type: 'feat', description: 'เพิ่ม [MP] Snow Flower Shadow และ [MP] Varmundt Shadow — รองรับ Pity mechanic (+1% ต่อครั้งที่ล้มเหลว สูงสุดตาม cap)' },
+      { type: 'feat', description: 'เพิ่ม [MP] Nebula Shadow — อัตราและวัตถุดิบเดียวกับ MP Shadow แต่ไม่มี Pity' },
+      { type: 'feat', description: 'รองรับ BSB กิจกรรม (BSB Event Costs) ใน Refine Simulator — ปุ่มสลับและแสดงในตารางอัตรา' },
+      { type: 'improve', description: 'ปรับปุ่ม batch refine จาก ×100/×1000 เป็น ×10/×50 และลด cap การตีจนถึงเป้าเหลือ 5,000 ครั้ง' },
+      { type: 'fix', description: 'แก้ไขค่า test stale ใน MP Jigsaw Calculator ให้ตรงกับ logic ปัจจุบัน' },
+    ],
+  },
+  {
     version: '0.3.0',
     date: '2026-05-21',
     changes: [
