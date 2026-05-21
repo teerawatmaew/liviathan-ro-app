@@ -12,6 +12,9 @@
     <meta name="theme-color" content="#09090b" />
     <meta name="color-scheme" content="dark" />
 
+    <!-- Theme: default dark; script removes class if user chose light -->
+    <script>try{const t=localStorage.getItem('lro-theme');if(t==='light')document.documentElement.classList.remove('dark')}catch(e){}</script>
+
     <!-- Primary meta -->
     <title>LiviathaN RO</title>
     <meta name="description" content="LiviathaN RO — คู่มือ เครื่องมือคำนวณ และแกลเลอรี่สำหรับเกม Ragnarok Online" />

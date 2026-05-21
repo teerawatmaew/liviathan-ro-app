@@ -1,6 +1,7 @@
-import { Outlet, NavLink } from 'react-router-dom'
-import { House, BookOpen, Image, Swords, ToggleLeft, Gem, Puzzle, Hammer, ChevronRight, Sparkles, ScrollText, Coins } from 'lucide-react'
+import { Outlet, NavLink, useLocation } from 'react-router-dom'
+import { House, BookOpen, Image, Swords, ToggleLeft, Gem, Puzzle, Hammer, ChevronRight, Sparkles, ScrollText, Coins, Sun, Moon } from 'lucide-react'
 import DonateButton from '@/layouts/DonateButton'
+import { useTheme } from '@/hooks/use-theme'
 
 function FacebookIcon({ className }: { className?: string }) {
   return (
@@ -59,7 +60,18 @@ const navSections: NavSection[] = [
   },
 ]
 
+const PAGE_LABELS: Record<string, string> = {
+  [PATHS.TOOLS_STAT]: 'คำนวณ Stat',
+  ...Object.fromEntries(
+    navSections.flatMap((s) => s.items).map((item) => [item.url, item.title]),
+  ),
+  [PATHS.COMING_SOON]: 'Coming Soon',
+}
+
 export default function MainLayout() {
+  const location = useLocation()
+  const [theme, toggleTheme] = useTheme()
+  const pageTitle = PAGE_LABELS[location.pathname] ?? null
   return (
     <SidebarProvider>
       <Sidebar>
@@ -157,8 +169,25 @@ export default function MainLayout() {
         <header className="flex items-center gap-2 px-4 h-12 border-b shrink-0 sticky top-0 bg-background z-10">
           <SidebarTrigger />
           <div className="w-px h-4 bg-border" />
-          <span className="text-sm font-medium text-muted-foreground">LiviathaN RO</span>
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className={`text-sm shrink-0 ${location.pathname !== PATHS.HOME && pageTitle ? 'text-muted-foreground/60' : 'font-medium'}`}>
+              LiviathaN RO
+            </span>
+            {location.pathname !== PATHS.HOME && pageTitle && (
+              <>
+                <ChevronRight className="size-3 text-muted-foreground/40 shrink-0" />
+                <span className="text-sm font-medium truncate">{pageTitle}</span>
+              </>
+            )}
+          </div>
           <div className="ml-auto flex items-center gap-2">
+            <button
+              onClick={toggleTheme}
+              className="inline-flex items-center justify-center size-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+              aria-label={theme === 'dark' ? 'เปลี่ยนเป็น Light mode' : 'เปลี่ยนเป็น Dark mode'}
+            >
+              {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
+            </button>
             <a
               href="https://www.facebook.com/maewtrw"
               target="_blank"

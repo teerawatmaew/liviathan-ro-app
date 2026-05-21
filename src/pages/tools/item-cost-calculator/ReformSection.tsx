@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useLocalStorage } from '@/hooks/use-local-storage'
 import { Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -32,7 +33,8 @@ export default function ReformSection() {
     setItems(prev => [...prev, { id: nextId(), category: 'other', name: '', price: 0, qty: 1 }])
   }
   function addPreset(preset: { name: string }) {
-    setItems(prev => [...prev, { id: nextId(), category: 'other', name: preset.name, price: 0, qty: 1 }])
+    const price = preset.name === 'Shadowdecon' ? sdPrice : 0
+    setItems(prev => [...prev, { id: nextId(), category: 'other', name: preset.name, price, qty: 1 }])
   }
   function removeItem(id: number) {
     setItems(prev => prev.filter(item => item.id !== id))

@@ -22,6 +22,17 @@ export interface ChangelogEntry {
  */
 export const changelog: ChangelogEntry[] = [
   {
+    version: '0.3.0',
+    date: '2026-05-21',
+    changes: [
+      { type: 'feat', description: 'เพิ่ม Dark/Light mode toggle ใน header — บันทึก preference ใน localStorage, default เป็น Dark mode' },
+      { type: 'feat', description: 'เพิ่ม Breadcrumb ใน header แสดงชื่อหน้าปัจจุบันแบบ dynamic ตาม route' },
+      { type: 'improve', description: 'เพิ่ม Tooltip บน stat labels ใน Stat Calculator — แสดงสูตรคำนวณเมื่อ hover' },
+      { type: 'fix', description: 'แก้ไข import useState ที่ขาดหายใน GradeSection และ ReformSection' },
+      { type: 'fix', description: 'แก้ไขราคา Shadowdecon ไม่ถูก set เมื่อเพิ่มจาก preset ใน Reform Section' },
+    ],
+  },
+  {
     version: '0.2.0',
     date: '2026-05-21',
     changes: [

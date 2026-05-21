@@ -4,6 +4,7 @@ import { usePageTitle } from '@/hooks/use-page-title'
 import { useLocalStorage } from '@/hooks/use-local-storage'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   Card,
   CardContent,
@@ -164,20 +165,31 @@ export default function StatCalculatorPage() {
           <CardContent>
             <div className="space-y-1">
               {[
-                { label: 'HP', value: result.hp.toLocaleString(), color: 'text-red-500' },
-                { label: 'SP', value: result.sp.toLocaleString(), color: 'text-blue-500' },
-                { label: 'ATK', value: result.atk.toLocaleString(), color: 'text-orange-500' },
-                { label: 'MATK', value: result.matk.toLocaleString(), color: 'text-purple-500' },
-                { label: 'HIT', value: result.hit.toLocaleString(), color: 'text-yellow-600' },
-                { label: 'FLEE', value: result.flee.toLocaleString(), color: 'text-teal-500' },
-                { label: 'DEF', value: result.def.toLocaleString(), color: 'text-zinc-500' },
-                { label: 'MDEF', value: result.mdef.toLocaleString(), color: 'text-indigo-500' },
-              ].map(({ label, value, color }) => (
+                { label: 'HP', value: result.hp.toLocaleString(), color: 'text-red-500', tooltip: '(BaseLevel + VIT) × (HP Modifier + BaseLevel × 0.5)' },
+                { label: 'SP', value: result.sp.toLocaleString(), color: 'text-blue-500', tooltip: '(BaseLevel + INT) × (SP Modifier + BaseLevel × 0.1)' },
+                { label: 'ATK', value: result.atk.toLocaleString(), color: 'text-orange-500', tooltip: 'STR + floor(STR / 10)²' },
+                { label: 'MATK', value: result.matk.toLocaleString(), color: 'text-purple-500', tooltip: 'floor(INT² / 7)' },
+                { label: 'HIT', value: result.hit.toLocaleString(), color: 'text-yellow-600', tooltip: 'DEX + BaseLevel' },
+                { label: 'FLEE', value: result.flee.toLocaleString(), color: 'text-teal-500', tooltip: 'AGI + BaseLevel' },
+                { label: 'DEF', value: result.def.toLocaleString(), color: 'text-zinc-500', tooltip: 'floor(VIT / 2)' },
+                { label: 'MDEF', value: result.mdef.toLocaleString(), color: 'text-indigo-500', tooltip: 'floor(INT / 4)' },
+              ].map(({ label, value, color, tooltip }) => (
                 <div
                   key={label}
                   className="flex items-center justify-between py-2 border-b last:border-0"
                 >
-                  <span className="text-sm text-muted-foreground w-16">{label}</span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="text-sm text-muted-foreground w-16 cursor-help underline decoration-dotted underline-offset-2">
+                          {label}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="right">
+                        <p className="font-mono text-xs">{tooltip}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                   <span className={`text-lg font-semibold tabular-nums ${color}`}>
                     {value}
                   </span>

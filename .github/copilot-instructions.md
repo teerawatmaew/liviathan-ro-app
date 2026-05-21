@@ -412,27 +412,28 @@ Sidebar ใน `MainLayout.tsx` แบ่งเป็น section:
 ## 10. Ideas / Roadmap (feature ที่อาจเพิ่มในอนาคต)
 
 ### เครื่องมือ (Tools)
-- **MVP Timer** — จับเวลา respawn MVP boss หลายตัวพร้อมกัน
-- **Equipment Simulator** — จำลอง equipment slot + แสดง stat ที่เปลี่ยนแปลง
-- **Skill Simulator** — วางแผน skill tree / skill build
-- **Zeny Calculator** — คำนวณ buy/sell NPC / market price
-- **Quest Tracker** — ติดตาม quest ที่กำลังทำ (local storage)
+
+| สถานะ | Feature | หมายเหตุ |
+|---|---|---|
+| ✅ Done | **Zeny Calculator** | คำนวณ buy/sell NPC / Zeny ↔ Baht |
+| ✅ Done | **LocalStorage hooks** | `use-local-storage.ts` — บันทึก state ล่าสุดอัตโนมัติ |
 
 ### คอนเทนต์
-- **Content Detail Page** — เปิดบทความแบบ full page ผ่าน `/content/:slug`
-  - PATHS.CONTENT_DETAIL มีพร้อมแล้วใน paths.ts แต่ยังไม่มี route
-- **Tag filter** ใน ContentPage
-- **Gallery categories** + lightbox viewer
+
+| สถานะ | Feature | หมายเหตุ |
+|---|---|---|
+| 🔲 Todo | **Content Detail Page** | `/content/:slug` — `PATHS.CONTENT_DETAIL` มีแล้ว, ยังไม่มี route |
+| 🔲 Todo | **Tag filter** | filter tag ใน ContentPage |
+| 🔲 Todo | **Gallery categories + lightbox** | หมวดหมู่รูป + ดูรูปแบบ full screen |
 
 ### UI / UX
-- **Dark / Light mode toggle** — เป็น dark mode ถาวรตลอด (เพิ่ม `class="dark"` ที่ `<html>` ใน index.html แล้ว) — อาจเพิ่ม toggle ในอนาคต
-- **Breadcrumb** ใน SidebarInset header
-- **Search bar** global ใน header
-- **Tooltip** บน stat labels ใน calculator
 
-### Architecture
-- **LocalStorage hooks** — บันทึก state ล่าสุด (stats, form values)
-- **i18n** — รองรับหลายภาษา (TH / EN)
+| สถานะ | Feature | หมายเหตุ |
+|---|---|---|
+| ✅ Done | **Tooltip บน stat labels** | อธิบายสูตรใน StatCalculatorPage |
+| ✅ Done | **Breadcrumb** ใน header | แสดง path ปัจจุบันใน SidebarInset header |
+| ✅ Done | **Dark / Light mode toggle** | `use-theme.ts` + toggle ใน header; default = dark |
+| 🔲 Todo | **Search bar** global ใน header | ค้นหา page / เนื้อหา |
 
 ---
 
