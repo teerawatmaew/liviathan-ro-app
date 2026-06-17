@@ -22,6 +22,14 @@ export interface ChangelogEntry {
  */
 export const changelog: ChangelogEntry[] = [
   {
+    version: '0.6.1',
+    date: '2026-06-17',
+    changes: [
+      { type: 'fix', description: 'แก้ไข Rate Up Event items บังคับ noBreak/noLevelLoss เป็น true เสมอ ทำให้การ refine ไม่ลดขั้น/ไม่ติดแม้ไม่ได้เปิด BSB' },
+      { type: 'fix', description: 'แก้ไข changelog.ts ที่ขาด changes array ใน entry 0.5.0 หลังผ่าน merge conflict' },
+    ],
+  },
+  {
     version: '0.6.0',
     date: '2026-06-17',
     changes: [
@@ -41,6 +49,8 @@ export const changelog: ChangelogEntry[] = [
   {
     version: '0.5.0',
     date: '2026-05-21',
+    changes: [
+      { type: 'feat', description: 'เพิ่มแสดงยอด Zeny ที่ใช้รวมในสถิติ Refine Simulator (Event Item)' },
       { type: 'feat', description: 'เพิ่มคอลัมน์ Zeny/ครั้ง ในตารางอัตราสำหรับ Event Item' },
       { type: 'fix', description: 'แก้ไขการนับจำนวนวัตถุดิบใน "แร่ที่ใช้ทั้งหมด" ให้ใช้จำนวนจริงต่อ attempt แทนการนับแค่จำนวนครั้ง' },
     ],

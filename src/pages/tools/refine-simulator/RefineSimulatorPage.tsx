@@ -165,8 +165,8 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
   const rollParams = {
     equipType,
     oreType,
-    noBreak: isEventType ? true : noBreak,
-    noLevelLoss: isEventType ? true : noLevelLoss,
+    noBreak: (isEventType && !isRateUpEvent) ? true : noBreak,
+    noLevelLoss: (isEventType && !isRateUpEvent) ? true : noLevelLoss,
     useEventBsb,
     pityStack: pityByLevel[currentLevel] ?? 0,
   }
