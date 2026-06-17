@@ -31,10 +31,16 @@ export const changelog: ChangelogEntry[] = [
     ],
   },
   {
-    version: '0.5.0',
+    version: '0.5.1',
     date: '2026-05-21',
     changes: [
-      { type: 'feat', description: 'เพิ่มแสดงยอด Zeny ที่ใช้รวมในสถิติ Refine Simulator (Event Item)' },
+      { type: 'improve', description: 'เพิ่ม Open Graph image (og:image) ขนาด 1200×630 สำหรับการแสดงผลตอนแชร์ลิงก์บน Facebook, LINE และ Discord' },
+      { type: 'improve', description: 'เพิ่ม og:url และปรับปรุง Twitter Card เป็น summary_large_image พร้อม twitter:image' },
+    ],
+  },
+  {
+    version: '0.5.0',
+    date: '2026-05-21',
       { type: 'feat', description: 'เพิ่มคอลัมน์ Zeny/ครั้ง ในตารางอัตราสำหรับ Event Item' },
       { type: 'fix', description: 'แก้ไขการนับจำนวนวัตถุดิบใน "แร่ที่ใช้ทั้งหมด" ให้ใช้จำนวนจริงต่อ attempt แทนการนับแค่จำนวนครั้ง' },
     ],
