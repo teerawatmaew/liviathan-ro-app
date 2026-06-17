@@ -59,25 +59,48 @@ export function getOreName(
 export function rollOne(lvl: number, params: RollParams): RollResult {
   const { equipType, oreType, noBreak, noLevelLoss } = params
 
-  // ── Event item: built-in no-break + no-level-loss, อัตราจาก config ────────
+  // ── Event item ────────────────────────────────────────────────────────────
   if (isEventRefineType(equipType)) {
     const eventItem = getEventRefineItem(equipType)!
     const pityStack = params.pityStack ?? 0
-    const effectiveRate = getEffectiveEventRate(eventItem, lvl, pityStack)
-    const oreName = getEventOreLabel(eventItem, lvl)
+    const effectiveRate = getEffectiveEventRate(eventItem, lvl, pityStack, oreType)
+    // Ore name: Rate Up items ใช้ชื่อ ore มาตรฐานจาก baseEquipType
+    const oreName = eventItem.baseEquipType
+      ? getOreName(eventItem.baseEquipType, lvl, oreType)
+      : getEventOreLabel(eventItem, lvl)
     const success = Math.random() * 100 < effectiveRate
+
     if (success) {
       return { newLevel: lvl + 1, broke: false, success: true, bsbUsed: 0, oreName, successRate: effectiveRate, newPityStack: 0 }
     }
-    // เมื่อล้มเหลว: เพิ่ม pity bonus สำหรับ level นี้ (ถ้า item มี pity mechanic)
-    let newPityStack: number | undefined
-    const perFail = eventItem.pityPerFail ?? 0
-    if (perFail > 0 && eventItem.pityCaps) {
-      const cap = eventItem.pityCaps[lvl] ?? null
-      const baseRate = eventItem.rates[lvl] ?? 100
-      newPityStack = cap !== null ? Math.min(pityStack + perFail, cap - baseRate) : pityStack + perFail
+
+    // Built-in no-break + no-level-loss (เช่น Ayothaya Helm, MP Shadow items)
+    if (eventItem.noBreak && eventItem.noLevelLoss) {
+      let newPityStack: number | undefined
+      const perFail = eventItem.pityPerFail ?? 0
+      if (perFail > 0 && eventItem.pityCaps) {
+        const cap = eventItem.pityCaps[lvl] ?? null
+        const baseRate = eventItem.rates[lvl] ?? 100
+        newPityStack = cap !== null ? Math.min(pityStack + perFail, cap - baseRate) : pityStack + perFail
+      }
+      return { newLevel: lvl, broke: false, success: false, bsbUsed: 0, oreName, successRate: effectiveRate, newPityStack }
     }
-    return { newLevel: lvl, broke: false, success: false, bsbUsed: 0, oreName, successRate: effectiveRate, newPityStack }
+
+    // Rate Up items: กลไกมาตรฐาน (BSB / ether drop / break)
+    const isEtherBase = eventItem.baseEquipType === 'weapon_lv5' || eventItem.baseEquipType === 'armor_lv2'
+    if (noLevelLoss) {
+      const bsbTable = params.useEventBsb ? BSB_EVENT_COSTS : BSB_COSTS
+      const bsbUsed = bsbTable[lvl] ?? 0
+      return { newLevel: lvl, broke: false, success: false, bsbUsed, oreName, successRate: effectiveRate }
+    }
+    if (isEtherBase && lvl < 10) {
+      const drop = oreType === 'normal' ? 3 : 1
+      return { newLevel: Math.max(0, lvl - drop), broke: false, success: false, bsbUsed: 0, oreName, successRate: effectiveRate }
+    }
+    if (noBreak) {
+      return { newLevel: Math.max(0, lvl - 1), broke: false, success: false, bsbUsed: 0, oreName, successRate: effectiveRate }
+    }
+    return { newLevel: 0, broke: true, success: false, bsbUsed: 0, oreName, successRate: effectiveRate }
   }
 
   // ── Standard equipment ────────────────────────────────────────────────────

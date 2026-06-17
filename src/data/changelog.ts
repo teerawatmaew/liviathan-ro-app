@@ -22,6 +22,15 @@ export interface ChangelogEntry {
  */
 export const changelog: ChangelogEntry[] = [
   {
+    version: '0.6.0',
+    date: '2026-06-17',
+    changes: [
+      { type: 'feat', description: 'เพิ่มอัตรา Refine Rate Up Event (Grade & Refine Rate Up + BSB, 10–24 มิ.ย. 2569) สำหรับอาวุธ Lv.1–5 และเกราะ Lv.1–2' },
+      { type: 'feat', description: 'รองรับ enrichedRates และ baseEquipType ใน EventRefineItem เพื่อรองรับ event item ที่ใช้กลไกมาตรฐาน (break/level-loss/BSB)' },
+      { type: 'improve', description: 'ปรับปรุง UI ตัวเลือกประเภทอุปกรณ์ใน Refine Simulator จาก dropdown เป็น button group จัดกลุ่มตามประเภท (อาวุธ / เกราะ / Shadow / Rate Up / Event)' },
+    ],
+  },
+  {
     version: '0.5.0',
     date: '2026-05-21',
     changes: [

@@ -32,17 +32,6 @@ export interface SimAttempt {
   bsbUsed: number
 }
 
-const STANDARD_OPTIONS: { value: string; label: string }[] = [
-  { value: 'weapon_lv1', label: 'อาวุธ Lv.1 (Oridecon)' },
-  { value: 'weapon_lv2', label: 'อาวุธ Lv.2 (Oridecon)' },
-  { value: 'weapon_lv3', label: 'อาวุธ Lv.3 (Oridecon)' },
-  { value: 'weapon_lv4', label: 'อาวุธ Lv.4 (Oridecon)' },
-  { value: 'weapon_lv5', label: 'อาวุธ Lv.5 (Etherdeocon)' },
-  { value: 'armor_lv1', label: 'เกราะ Lv.1 (Elunium)' },
-  { value: 'armor_lv2', label: 'เกราะ Lv.2 (Ethernium)' },
-  { value: 'shadow_weapon', label: 'Shadow อาวุธ (Oridecon)' },
-  { value: 'shadow_armor', label: 'Shadow เกราะ (Elunium)' },
-]
 
 function StatTile({
   label,
@@ -96,10 +85,13 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
   // ── Derived ───────────────────────────────────────────────────────────────
   const isEventType = isEventRefineType(equipType)
   const eventItem = isEventType ? getEventRefineItem(equipType) : undefined
+  /** Rate Up event: ใช้กลไกมาตรฐาน (break/level-loss/BSB) + ore ปกติ */
+  const isRateUpEvent = isEventType && !!eventItem?.baseEquipType
   const rateData = !isEventType ? REFINE_RATES[equipType as RefineEquipType] : null
   const maxLevel = isEventType ? (eventItem?.maxLevel ?? 20) : rateData!.maxLevel
   const safetyLevel = isEventType ? (eventItem?.safetyLevel ?? 0) : rateData!.safetyLevel
   const isEtherType = equipType === 'weapon_lv5' || equipType === 'armor_lv2'
+    || eventItem?.baseEquipType === 'weapon_lv5' || eventItem?.baseEquipType === 'armor_lv2'
   const reachedTarget = currentLevel >= targetLevel
   const reachedMax = currentLevel >= maxLevel
   const canAttempt = !isBroken && !reachedTarget && !reachedMax
@@ -107,7 +99,7 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
   const nextRate =
     canAttempt
       ? isEventType && eventItem
-        ? getEffectiveEventRate(eventItem, currentLevel, pityByLevel[currentLevel] ?? 0)
+        ? getEffectiveEventRate(eventItem, currentLevel, pityByLevel[currentLevel] ?? 0, isRateUpEvent ? oreType : 'normal')
         : isEventType
           ? null
           : (getRefineSuccessRate(equipType as RefineEquipType, currentLevel, oreType) ?? null)
@@ -133,6 +125,20 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
 
   const rateTableData = useMemo(() => {
     if (isEventType && eventItem) {
+      if (isRateUpEvent) {
+        // Rate Up event: แสดงเหมือน standard item (มี enrichedRate + BSB)
+        return Array.from({ length: eventItem.maxLevel }, (_, i) => ({
+          fromLevel: i,
+          normalRate: eventItem.rates[i] ?? 0,
+          enrichedRate: eventItem.enrichedRates ? (eventItem.enrichedRates[i] ?? 0) : (null as number | null),
+          isSafe: i < eventItem.safetyLevel,
+          bsbCost: BSB_COSTS[i] ?? null,
+          oreCount: null as number | null,
+          zenyCost: null as number | null,
+          pityCap: null as number | null,
+        }))
+      }
+      // Custom event item (Ayothaya Helm, MP Shadow ฯลฯ)
       return Array.from({ length: eventItem.maxLevel }, (_, i) => ({
         fromLevel: i,
         normalRate: eventItem.rates[i] ?? 0,
@@ -154,7 +160,7 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
       zenyCost: null as number | null,
       pityCap: null as number | null,
     }))
-  }, [maxLevel, safetyLevel, rateData, isEventType, eventItem])
+  }, [maxLevel, safetyLevel, rateData, isEventType, eventItem, isRateUpEvent])
 
   const rollParams = {
     equipType,
@@ -209,10 +215,7 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
     // ติดตาม pity bonus แต่ละ level เพื่อใช้ใน batch
     const pityByLvl: Record<number, number> = { ...pityByLevel }
     // ether type ที่เริ่มต่ำกว่า +10: จะ pause อัตโนมัติเมื่อถึง +10
-    const startedBelowEther =
-      (equipType === 'weapon_lv5' || equipType === 'armor_lv2') &&
-      lvl < 10 &&
-      targetLevel > 10
+    const startedBelowEther = isEtherType && lvl < 10 && targetLevel > 10
     let broken = false
     let hitEtherThreshold = false
     let cnt = counter
@@ -292,12 +295,17 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
   function handleEquipTypeChange(val: string) {
     const newEventItem = getEventRefineItem(val)
     const newIsEvent = !!newEventItem
+    const newIsRateUpEvent = !!newEventItem?.baseEquipType
     const newIsEther = val === 'weapon_lv5' || val === 'armor_lv2'
+      || newEventItem?.baseEquipType === 'weapon_lv5'
+      || newEventItem?.baseEquipType === 'armor_lv2'
     const newMax = newIsEvent
       ? (newEventItem?.maxLevel ?? 20)
       : REFINE_RATES[val as RefineEquipType].maxLevel
     setEquipType(val)
-    setNoBreak(newIsEther)
+    // Rate Up items และ standard items: ตั้ง noBreak ตาม ether type
+    // Built-in no-break events (Ayothaya ฯลฯ): ไม่ต้องเปลี่ยน
+    if (!newIsEvent || newIsRateUpEvent) setNoBreak(newIsEther)
     setPityByLevel({})
     const newStart = Math.min(startLevel, newMax - 1)
     const newTarget = Math.min(Math.max(targetLevel, newStart + 1), newMax)
@@ -340,35 +348,125 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label>ประเภทอุปกรณ์</Label>
-              <Select value={equipType} onValueChange={handleEquipTypeChange}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {STANDARD_OPTIONS.map((o) => (
-                    <SelectItem key={o.value} value={o.value}>
-                      {o.label}
-                    </SelectItem>
+          {/* Equipment type selector */}
+          <div className="space-y-2">
+            <Label>ประเภทอุปกรณ์</Label>
+            <div className="rounded-lg border bg-muted/10 p-3 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="w-14 shrink-0 text-xs text-muted-foreground">อาวุธ</span>
+                <div className="flex flex-wrap gap-1">
+                  {[1, 2, 3, 4, 5].map((lv) => (
+                    <button
+                      key={lv}
+                      onClick={() => handleEquipTypeChange(`weapon_lv${lv}`)}
+                      className={cn(
+                        'rounded-md border px-2.5 py-1 text-xs transition-colors cursor-pointer select-none',
+                        equipType === `weapon_lv${lv}`
+                          ? 'border-primary bg-primary/15 text-primary font-medium'
+                          : 'border-border text-muted-foreground hover:border-muted-foreground hover:text-foreground',
+                      )}
+                    >
+                      Lv.{lv}
+                    </button>
                   ))}
-                  {EVENT_REFINE_ITEMS.length > 0 && (
-                    <>
-                      <SelectItem value="__sep__" disabled className="text-xs text-muted-foreground/60 font-medium py-1">
-                        ── Event Items ──
-                      </SelectItem>
-                      {EVENT_REFINE_ITEMS.map((item) => (
-                        <SelectItem key={item.id} value={item.id}>
-                          {item.name}
-                        </SelectItem>
-                      ))}
-                    </>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-14 shrink-0 text-xs text-muted-foreground">เกราะ</span>
+                <div className="flex flex-wrap gap-1">
+                  {[1, 2].map((lv) => (
+                    <button
+                      key={lv}
+                      onClick={() => handleEquipTypeChange(`armor_lv${lv}`)}
+                      className={cn(
+                        'rounded-md border px-2.5 py-1 text-xs transition-colors cursor-pointer select-none',
+                        equipType === `armor_lv${lv}`
+                          ? 'border-primary bg-primary/15 text-primary font-medium'
+                          : 'border-border text-muted-foreground hover:border-muted-foreground hover:text-foreground',
+                      )}
+                    >
+                      Lv.{lv}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-14 shrink-0 text-xs text-muted-foreground">Shadow</span>
+                <div className="flex flex-wrap gap-1">
+                  {[
+                    { value: 'shadow_weapon', label: 'อาวุธ' },
+                    { value: 'shadow_armor', label: 'เกราะ' },
+                  ].map((o) => (
+                    <button
+                      key={o.value}
+                      onClick={() => handleEquipTypeChange(o.value)}
+                      className={cn(
+                        'rounded-md border px-2.5 py-1 text-xs transition-colors cursor-pointer select-none',
+                        equipType === o.value
+                          ? 'border-primary bg-primary/15 text-primary font-medium'
+                          : 'border-border text-muted-foreground hover:border-muted-foreground hover:text-foreground',
+                      )}
+                    >
+                      {o.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {EVENT_REFINE_ITEMS.length > 0 && (
+                <>
+                  <div className="border-t border-border/50" />
+                  {EVENT_REFINE_ITEMS.filter((i) => !!i.baseEquipType).length > 0 && (
+                    <div className="flex items-start gap-2">
+                      <span className="w-14 shrink-0 flex items-center gap-0.5 text-xs text-yellow-400/80 mt-0.5">
+                        <Sparkles className="size-3 shrink-0" />Rate Up
+                      </span>
+                      <div className="flex flex-wrap gap-1">
+                        {EVENT_REFINE_ITEMS.filter((i) => !!i.baseEquipType).map((item) => (
+                          <button
+                            key={item.id}
+                            onClick={() => handleEquipTypeChange(item.id)}
+                            className={cn(
+                              'rounded-md border px-2.5 py-1 text-xs transition-colors cursor-pointer select-none',
+                              equipType === item.id
+                                ? 'border-yellow-500 bg-yellow-500/15 text-yellow-300 font-medium'
+                                : 'border-border text-muted-foreground hover:border-yellow-500/50 hover:text-yellow-300/70',
+                            )}
+                          >
+                            {item.name.replace('[Rate Up] ', '')}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   )}
-                </SelectContent>
-              </Select>
+                  {EVENT_REFINE_ITEMS.filter((i) => !i.baseEquipType).length > 0 && (
+                    <div className="flex items-start gap-2">
+                      <span className="w-14 shrink-0 flex items-center gap-0.5 text-xs text-yellow-400/80 mt-0.5">
+                        <Sparkles className="size-3 shrink-0" />Event
+                      </span>
+                      <div className="flex flex-wrap gap-1">
+                        {EVENT_REFINE_ITEMS.filter((i) => !i.baseEquipType).map((item) => (
+                          <button
+                            key={item.id}
+                            onClick={() => handleEquipTypeChange(item.id)}
+                            className={cn(
+                              'rounded-md border px-2.5 py-1 text-xs transition-colors cursor-pointer select-none',
+                              equipType === item.id
+                                ? 'border-yellow-500 bg-yellow-500/15 text-yellow-300 font-medium'
+                                : 'border-border text-muted-foreground hover:border-yellow-500/50 hover:text-yellow-300/70',
+                            )}
+                          >
+                            {item.name.replace(/^\[.*?\] /, '')}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
+          </div>
 
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>เริ่มจาก</Label>
               <Select value={String(startLevel)} onValueChange={handleStartLevelChange}>
@@ -426,7 +524,7 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
             <div className="rounded-lg border p-3 space-y-3 bg-muted/20">
               <div className="space-y-1.5">
                 <div className="text-xs font-medium text-muted-foreground">แร่ที่ใช้</div>
-                {isEventType ? (
+                {(isEventType && !isRateUpEvent) ? (
                   <div className="flex items-center gap-2 rounded-md bg-muted/30 border px-3 py-2">
                     <Sparkles className="size-3.5 text-yellow-400 shrink-0" />
                     <span className="text-xs text-yellow-300">
@@ -456,7 +554,7 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
               </div>
               <div className="space-y-1.5">
                 <div className="text-xs font-medium text-muted-foreground">การป้องกันเมื่อล้มเหลว</div>
-                {isEventType ? (
+                {(isEventType && !isRateUpEvent) ? (
                   <div className="flex items-center gap-2 rounded-md bg-green-500/10 border border-green-500/30 px-3 py-2">
                     <Shield className="size-3.5 text-green-400 shrink-0" />
                     <span className="text-xs text-green-400">ล้มเหลว = ไม่ลดขั้น + ไม่เสียหาย (อัตโนมัติ)</span>
@@ -507,7 +605,7 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
                     <div className="min-h-[1rem] text-xs leading-relaxed">
                       {isEtherType && currentLevel < 10 && !noLevelLoss && (
                         <span className="text-sky-400/80">
-                          {equipType === 'weapon_lv5' ? 'อาวุธ Lv.5' : 'เกราะ Lv.2'} (&lt;+10): ไม่เสียหายโดยอัตโนมัติ
+                          {(eventItem?.baseEquipType ?? equipType) === 'weapon_lv5' ? 'อาวุธ Lv.5' : 'เกราะ Lv.2'} (&lt;+10): ไม่เสียหายโดยอัตโนมัติ
                           {' '}— ธรรมดา −3 ขั้น · Enriched/HD −1 ขั้น
                         </span>
                       )}
@@ -733,28 +831,28 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
                   <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">
                     {isEventType ? 'อัตราสำเร็จ' : 'แร่ธรรมดา'}
                   </th>
-                  {isEventType && !!eventItem?.pityPerFail && (
+                  {(isEventType && !isRateUpEvent) && !!eventItem?.pityPerFail && (
                     <th className="px-3 py-2 text-center text-xs font-medium text-purple-400">
                       สูงสุด (Pity)
                     </th>
                   )}
-                  {!isEventType && (
+                  {(!isEventType || isRateUpEvent) && (
                     <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">
                       Enriched / HD
                     </th>
                   )}
-                  {!isEventType && (
+                  {(!isEventType || isRateUpEvent) && (
                     <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">
                       BSB ต่อครั้ง{useEventBsb && <span className="ml-1 text-pink-400">♦กิจกรรม</span>}
                     </th>
                   )}
-                  {isEventType && (
+                  {(isEventType && !isRateUpEvent) && (
                     <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">
                       Zeny/ครั้ง
                     </th>
                   )}
                   <th className="px-3 py-2 text-center text-xs font-medium text-muted-foreground">
-                    {isEventType ? 'เหล็กไหล / ครั้ง' : 'แร่ที่ใช้'}
+                    {(isEventType && !isRateUpEvent) ? 'เหล็กไหล / ครั้ง' : 'แร่ที่ใช้'}
                   </th>
                 </tr>
               </thead>
@@ -790,7 +888,7 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
                     >
                       {row.normalRate}%
                     </td>
-                    {isEventType && !!eventItem?.pityPerFail && (
+                    {(isEventType && !isRateUpEvent) && !!eventItem?.pityPerFail && (
                       <td className="px-3 py-1.5 text-center tabular-nums">
                         {row.pityCap !== null ? (
                           <span className="text-purple-400 font-medium">{row.pityCap}%</span>
@@ -799,7 +897,7 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
                         )}
                       </td>
                     )}
-                    {!isEventType && (
+                    {(!isEventType || isRateUpEvent) && (
                       <td
                         className={cn(
                           'px-3 py-1.5 text-center tabular-nums',
@@ -813,7 +911,7 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
                         {row.enrichedRate}%
                       </td>
                     )}
-                    {!isEventType && (
+                    {(!isEventType || isRateUpEvent) && (
                       <td className="px-3 py-1.5 text-center text-xs tabular-nums">
                         {row.bsbCost !== null ? (
                           useEventBsb ? (
@@ -831,15 +929,15 @@ export default function RefineSimulatorPage() {  usePageTitle('Refine Simulator'
                         )}
                       </td>
                     )}
-                    {isEventType && (
+                    {(isEventType && !isRateUpEvent) && (
                       <td className="px-3 py-1.5 text-center text-xs tabular-nums whitespace-nowrap">
                         <span className="text-amber-300 font-medium">{row.zenyCost?.toLocaleString()}</span>
                       </td>
                     )}
                     <td className="px-3 py-1.5 text-center text-xs text-muted-foreground whitespace-nowrap">
-                      {isEventType
+                      {(isEventType && !isRateUpEvent)
                         ? <span className="tabular-nums text-yellow-300 font-medium">{row.oreCount}</span>
-                        : getOreName(equipType, row.fromLevel, 'normal')
+                        : getOreName(isRateUpEvent ? eventItem!.baseEquipType! : equipType, row.fromLevel, 'normal')
                       }
                     </td>
                   </tr>

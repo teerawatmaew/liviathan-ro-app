@@ -29,11 +29,22 @@ export interface EventRefineItem {
   /** จำนวน ore ต่อ 1 attempt */
   oreCount: (fromLevel: number) => number
   /**
-   * อัตราสำเร็จ 0–100 ต่อขั้น
+   * อัตราสำเร็จ 0–100 ต่อขั้น (แร่ธรรมดา)
    * index = fromLevel (0 = ตี +0→+1)
    * ต้องมีครบ maxLevel entries
    */
   rates: number[]
+  /**
+   * อัตราสำเร็จ 0–100 ต่อขั้น (Enriched/HD ore)
+   * หากไม่ระบุ จะใช้ rates[] แทน
+   */
+  enrichedRates?: number[]
+  /**
+   * RefineEquipType ของอุปกรณ์พื้นฐาน
+   * ระบุเมื่อ event item นี้ใช้กลไกมาตรฐาน (break / level loss) และ ore ปกติ
+   * เช่น event_rateup_weapon_lv4 → baseEquipType = 'weapon_lv4'
+   */
+  baseEquipType?: string
   /**
    * ระบบ Pity: ทุกครั้งที่ล้มเหลวที่ level เดิม อัตราสำเร็จจะเพิ่มขึ้น N%
    * ต้องใช้คู่กับ pityCaps เพื่อกำหนดอัตราสูงสุดต่อ level
@@ -108,6 +119,116 @@ export const EVENT_REFINE_ITEMS: EventRefineItem[] = [
     rates: [100, 100, 100, 100, 40, 30, 20, 15, 10, 5],
     // ไม่มี pity mechanic
   },
+
+  // ── [Rate Up Event] Grade & Refine Rate Up + BSB (10–24 มิ.ย. 2569) ─────
+  // กลไกมาตรฐาน (break / level-loss / BSB) ยังคงใช้อยู่
+  // rates[]       = อัตราด้วยแร่ธรรมดา (ไอเท็มทั่วไปภายในเกม)
+  // enrichedRates = อัตราด้วยแร่ Cash (Enriched/HD)
+  {
+    id: 'event_rateup_armor_lv1',
+    name: '[Rate Up] Armor Lv.1',
+    maxLevel: 20,
+    safetyLevel: 4,
+    noBreak: false,
+    noLevelLoss: false,
+    zenyCost: 0,
+    oreLabel: 'Elunium / Carnium',
+    oreCount: () => 1,
+    baseEquipType: 'armor_lv1',
+    //              +0   +1   +2   +3  +4  +5  +6  +7  +8  +9 +10 +11 +12 +13 +14 +15 +16 +17 +18 +19
+    rates:     [100, 100, 100, 100,  60, 40, 40, 20, 20,  9, 20, 20, 16, 16, 15, 15, 14, 14, 10, 10],
+    enrichedRates: [100, 100, 100, 100,  95, 80, 80, 60, 50, 35, 20, 20, 16, 16, 15, 15, 14, 14, 10, 10],
+  },
+  {
+    id: 'event_rateup_armor_lv2',
+    name: '[Rate Up] Armor Lv.2',
+    maxLevel: 20,
+    safetyLevel: 3,
+    noBreak: false,
+    noLevelLoss: false,
+    zenyCost: 0,
+    oreLabel: 'Ethernium / HD Ether Carnium',
+    oreCount: () => 1,
+    baseEquipType: 'armor_lv2',
+    //              +0   +1   +2  +3  +4  +5  +6  +7  +8  +9 +10 +11 +12 +13 +14 +15 +16 +17 +18 +19
+    rates:     [100, 100, 100,  80, 80, 60, 60, 40, 40, 18, 16, 16, 16, 16, 14, 14, 14, 14, 10, 10],
+    enrichedRates: [100, 100, 100,  95, 85, 70, 65, 55, 45, 25, 20, 20, 20, 20, 15, 15, 15, 15, 10, 10],
+  },
+  {
+    id: 'event_rateup_weapon_lv1',
+    name: '[Rate Up] อาวุธ Lv.1',
+    maxLevel: 20,
+    safetyLevel: 7,
+    noBreak: false,
+    noLevelLoss: false,
+    zenyCost: 0,
+    oreLabel: 'Oridecon / Bradium',
+    oreCount: () => 1,
+    baseEquipType: 'weapon_lv1',
+    //              +0   +1   +2   +3   +4   +5   +6  +7  +8  +9 +10 +11 +12 +13 +14 +15 +16 +17 +18 +19
+    rates:     [100, 100, 100, 100, 100, 100, 100,  60, 40, 19, 40, 40, 35, 35, 30, 30, 20, 20, 15, 15],
+    enrichedRates: [100, 100, 100, 100, 100, 100, 100,  95, 85, 55, 40, 40, 35, 35, 30, 30, 20, 20, 15, 15],
+  },
+  {
+    id: 'event_rateup_weapon_lv2',
+    name: '[Rate Up] อาวุธ Lv.2',
+    maxLevel: 20,
+    safetyLevel: 6,
+    noBreak: false,
+    noLevelLoss: false,
+    zenyCost: 0,
+    oreLabel: 'Oridecon / Bradium',
+    oreCount: () => 1,
+    baseEquipType: 'weapon_lv2',
+    //              +0   +1   +2   +3   +4   +5  +6  +7  +8  +9 +10 +11 +12 +13 +14 +15 +16 +17 +18 +19
+    rates:     [100, 100, 100, 100, 100, 100,  60, 50, 20, 19, 40, 40, 35, 35, 30, 30, 20, 20, 15, 15],
+    enrichedRates: [100, 100, 100, 100, 100, 100,  95, 85, 60, 45, 40, 40, 35, 35, 30, 30, 20, 20, 15, 15],
+  },
+  {
+    id: 'event_rateup_weapon_lv3',
+    name: '[Rate Up] อาวุธ Lv.3',
+    maxLevel: 20,
+    safetyLevel: 5,
+    noBreak: false,
+    noLevelLoss: false,
+    zenyCost: 0,
+    oreLabel: 'Oridecon / Bradium',
+    oreCount: () => 1,
+    baseEquipType: 'weapon_lv3',
+    //              +0   +1   +2   +3   +4  +5  +6  +7  +8  +9 +10 +11 +12 +13 +14 +15 +16 +17 +18 +19
+    rates:     [100, 100, 100, 100, 100,  60, 50, 20, 20, 19, 40, 40, 35, 35, 30, 30, 20, 20, 15, 15],
+    enrichedRates: [100, 100, 100, 100, 100,  95, 90, 70, 60, 45, 40, 40, 35, 35, 30, 30, 20, 20, 15, 15],
+  },
+  {
+    id: 'event_rateup_weapon_lv4',
+    name: '[Rate Up] อาวุธ Lv.4',
+    maxLevel: 20,
+    safetyLevel: 4,
+    noBreak: false,
+    noLevelLoss: false,
+    zenyCost: 0,
+    oreLabel: 'Oridecon / Bradium',
+    oreCount: () => 1,
+    baseEquipType: 'weapon_lv4',
+    //              +0   +1   +2   +3  +4  +5  +6  +7  +8  +9 +10 +11 +12 +13 +14 +15 +16 +17 +18 +19
+    rates:     [100, 100, 100, 100,  60, 40, 40, 20, 20,  9, 20, 20, 16, 16, 15, 15, 14, 14, 10, 10],
+    enrichedRates: [100, 100, 100, 100,  95, 80, 80, 60, 50, 35, 20, 20, 16, 16, 15, 15, 14, 14, 10, 10],
+  },
+  {
+    id: 'event_rateup_weapon_lv5',
+    name: '[Rate Up] อาวุธ Lv.5',
+    maxLevel: 20,
+    safetyLevel: 3,
+    noBreak: false,
+    noLevelLoss: false,
+    zenyCost: 0,
+    oreLabel: 'Etherdeocon / HD Ether Bradium',
+    oreCount: () => 1,
+    baseEquipType: 'weapon_lv5',
+    //              +0   +1   +2  +3  +4  +5  +6  +7  +8  +9 +10 +11 +12 +13 +14 +15 +16 +17 +18 +19
+    rates:     [100, 100, 100,  80, 80, 60, 60, 40, 40, 18, 16, 16, 16, 16, 14, 14, 14, 14, 10, 10],
+    enrichedRates: [100, 100, 100,  95, 85, 70, 65, 55, 45, 25, 20, 20, 20, 20, 15, 15, 15, 15, 10, 10],
+  },
 ]
 
 /** ดึง EventRefineItem ตาม id; คืน undefined หากไม่พบ */
@@ -128,12 +249,18 @@ export function getEventOreLabel(item: EventRefineItem, fromLevel: number): stri
 /**
  * คำนวณอัตราสำเร็จจริงที่ level นี้ รวม pity bonus ที่สะสมไว้
  * @param pityStack จำนวน % ที่สะสมจากการล้มเหลวก่อนหน้า (0 = ยังไม่มี pity)
+ * @param oreType  ประเภทแร่ — ถ้า item มี enrichedRates จะใช้เมื่อ oreType = 'enrichedHd'
  */
 export function getEffectiveEventRate(
   item: EventRefineItem,
   fromLevel: number,
   pityStack: number,
+  oreType: 'normal' | 'enrichedHd' = 'normal',
 ): number {
+  // Rate Up items: ใช้ enrichedRates เมื่อ oreType = enrichedHd
+  if (oreType === 'enrichedHd' && item.enrichedRates) {
+    return item.enrichedRates[fromLevel] ?? 100
+  }
   const base = item.rates[fromLevel] ?? 100
   if (!item.pityPerFail || !item.pityCaps) return base
   const cap = item.pityCaps[fromLevel] ?? null
