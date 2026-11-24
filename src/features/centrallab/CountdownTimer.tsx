@@ -1,11 +1,17 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Play, Pause, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { cn } from '@/lib/utils'
+
+let audioCtx: AudioContext | null = null
 
 function playBeep() {
   try {
-    const ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
+    audioCtx ??= new (window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
+    const ctx = audioCtx
+    void ctx.resume()
     const beep = (startTime: number) => {
       const osc = ctx.createOscillator()
       const gain = ctx.createGain()
@@ -31,94 +37,92 @@ interface Props {
   initialSeconds: number
 }
 
+/**
+ * นับถอยหลังจากเวลาสิ้นสุดจริง (Date.now) แทนการลบทีละ 1 วินาที
+ * เพื่อไม่ให้เวลาเพี้ยนเมื่อแท็บอยู่เบื้องหลัง (browser throttle setInterval)
+ */
 export default function CountdownTimer({ label, initialSeconds }: Props) {
   const [remaining, setRemaining] = useState(initialSeconds)
   const [running, setRunning] = useState(false)
-  const [expired, setExpired] = useState(false)
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const endAtRef = useRef(0)
 
-  const stop = useCallback(() => {
-    if (intervalRef.current !== null) {
-      clearInterval(intervalRef.current)
-      intervalRef.current = null
-    }
-  }, [])
+  const expired = remaining === 0
 
   useEffect(() => {
-    if (!running) {
-      stop()
-      return
+    if (!running) return
+    const tick = () => {
+      const left = Math.max(0, Math.ceil((endAtRef.current - Date.now()) / 1000))
+      setRemaining(left)
+      if (left === 0) {
+        setRunning(false)
+        playBeep()
+      }
     }
-    intervalRef.current = setInterval(() => {
-      setRemaining((prev) => {
-        if (prev <= 1) {
-          stop()
-          setRunning(false)
-          setExpired(true)
-          playBeep()
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
-    return stop
-  }, [running, stop])
+    const id = setInterval(tick, 250)
+    return () => clearInterval(id)
+  }, [running])
 
   function handleToggle() {
     if (expired) return
+    if (!running) endAtRef.current = Date.now() + remaining * 1000
     setRunning((r) => !r)
   }
 
   function handleReset() {
-    stop()
     setRunning(false)
-    setExpired(false)
     setRemaining(initialSeconds)
   }
 
   const mm = String(Math.floor(remaining / 60)).padStart(2, '0')
   const ss = String(remaining % 60).padStart(2, '0')
+  const pct = (remaining / initialSeconds) * 100
 
   return (
-    <Card className={expired ? 'border-destructive animate-pulse' : ''}>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
+    <Card className={cn('gap-2 py-3 sm:gap-4 sm:py-4', expired && 'ring-2 ring-destructive animate-pulse')}>
+      <CardHeader className="px-2 sm:px-4">
+        <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground text-center sm:text-left">
           {label}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Countdown display */}
+      <CardContent className="px-2 sm:px-4 space-y-2 sm:space-y-4">
         <div
-          className={`text-5xl font-mono font-bold text-center tabular-nums ${
-            expired ? 'text-destructive' : ''
-          }`}
+          className={cn(
+            'text-2xl sm:text-5xl font-mono font-bold text-center tabular-nums',
+            expired && 'text-destructive',
+          )}
+          role="timer"
+          aria-live="off"
         >
           {mm}:{ss}
         </div>
 
+        <div className="h-1 rounded-full bg-muted overflow-hidden">
+          <div
+            className={cn('h-full rounded-full transition-[width] duration-300', expired ? 'bg-destructive' : 'bg-primary')}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+
         {expired && (
-          <p className="text-center text-xs font-semibold text-destructive">
+          <p className="text-center text-xs font-semibold text-destructive" role="alert">
             หมดเวลา!
           </p>
         )}
 
-        {/* Controls */}
-        <div className="flex justify-center gap-2">
+        <div className="flex justify-center gap-1 sm:gap-2">
           <Button
             size="sm"
             variant={running ? 'outline' : 'default'}
             onClick={handleToggle}
             disabled={expired}
+            aria-label={running ? `หยุด ${label}` : `เริ่ม ${label}`}
           >
-            {running ? (
-              <><Pause className="size-3.5" /> หยุด</>
-            ) : (
-              <><Play className="size-3.5" /> เริ่ม</>
-            )}
+            {running ? <Pause className="size-3.5" /> : <Play className="size-3.5" />}
+            <span className="hidden sm:inline">{running ? 'หยุด' : 'เริ่ม'}</span>
           </Button>
-          <Button size="sm" variant="ghost" onClick={handleReset}>
+          <Button size="sm" variant="ghost" onClick={handleReset} aria-label={`รีเซ็ต ${label}`}>
             <RotateCcw className="size-3.5" />
-            รีเซ็ต
+            <span className="hidden sm:inline">รีเซ็ต</span>
           </Button>
         </div>
       </CardContent>

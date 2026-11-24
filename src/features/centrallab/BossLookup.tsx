@@ -9,16 +9,16 @@ import type { Boss, ElementType, StageType } from './types'
 // ─── Element badge colours ──────────────────────────────────────────────────
 
 const elementCls: Record<ElementType, string> = {
-  Neutral: 'bg-slate-800 text-slate-200 border-slate-600',
-  Water:   'bg-blue-900/60 text-blue-300 border-blue-700',
-  Earth:   'bg-amber-900/60 text-amber-300 border-amber-700',
-  Fire:    'bg-red-900/60 text-red-300 border-red-700',
-  Wind:    'bg-green-900/60 text-green-300 border-green-700',
-  Poison:  'bg-purple-900/60 text-purple-300 border-purple-700',
-  Holy:    'bg-yellow-900/60 text-yellow-200 border-yellow-700',
-  Shadow:  'bg-indigo-900/60 text-indigo-300 border-indigo-700',
-  Ghost:   'bg-gray-800 text-gray-300 border-gray-600',
-  Undead:  'bg-zinc-900 text-zinc-300 border-zinc-700',
+  Neutral: 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-600',
+  Water:   'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/60 dark:text-blue-300 dark:border-blue-700',
+  Earth:   'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/60 dark:text-amber-300 dark:border-amber-700',
+  Fire:    'bg-red-100 text-red-800 border-red-300 dark:bg-red-900/60 dark:text-red-300 dark:border-red-700',
+  Wind:    'bg-green-100 text-green-800 border-green-300 dark:bg-green-900/60 dark:text-green-300 dark:border-green-700',
+  Poison:  'bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-900/60 dark:text-purple-300 dark:border-purple-700',
+  Holy:    'bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/60 dark:text-yellow-200 dark:border-yellow-700',
+  Shadow:  'bg-indigo-100 text-indigo-800 border-indigo-300 dark:bg-indigo-900/60 dark:text-indigo-300 dark:border-indigo-700',
+  Ghost:   'bg-gray-100 text-gray-700 border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600',
+  Undead:  'bg-zinc-200 text-zinc-800 border-zinc-400 dark:bg-zinc-900 dark:text-zinc-300 dark:border-zinc-700',
 }
 
 function pctCls(pct: number) {
@@ -130,7 +130,13 @@ export default function BossLookup() {
   const [open, setOpen]         = useState(false)
   const [selected, setSelected] = useState<Boss | null>(null)
   const [stageFilter, setStageFilter] = useState<Filter>('all')
+  const [activeIndex, setActiveIndex] = useState(0)
   const wrapperRef = useRef<HTMLDivElement>(null)
+
+  const stageBosses = useMemo(
+    () => centralLabBosses.filter((boss) => stageFilter === 'all' || boss.stage === stageFilter),
+    [stageFilter],
+  )
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -145,13 +151,9 @@ export default function BossLookup() {
 
   const suggestions = useMemo(() => {
     if (!query.trim()) return []
-    const q = query.toLowerCase()
-    return centralLabBosses.filter((boss) => {
-      const matchName  = boss.name.toLowerCase().includes(q)
-      const matchStage = stageFilter === 'all' || boss.stage === stageFilter
-      return matchName && matchStage
-    }).slice(0, 10)
-  }, [query, stageFilter])
+    const q = query.trim().toLowerCase()
+    return stageBosses.filter((boss) => boss.name.toLowerCase().includes(q)).slice(0, 10)
+  }, [query, stageBosses])
 
   function handleSelect(boss: Boss) {
     setSelected(boss)
@@ -169,6 +171,23 @@ export default function BossLookup() {
     setQuery(e.target.value)
     setSelected(null)
     setOpen(true)
+    setActiveIndex(0)
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (!open || suggestions.length === 0) return
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setActiveIndex((i) => (i + 1) % suggestions.length)
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setActiveIndex((i) => (i - 1 + suggestions.length) % suggestions.length)
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
+      handleSelect(suggestions[Math.min(activeIndex, suggestions.length - 1)])
+    } else if (e.key === 'Escape') {
+      setOpen(false)
+    }
   }
 
   const stageCls = (f: Filter) => stageFilter === f
@@ -179,7 +198,7 @@ export default function BossLookup() {
     <div>
       <h2 className="text-lg font-semibold mb-1">ค้นหาบอส</h2>
       <p className="text-muted-foreground text-sm mb-4">
-        พิมพ์ชื่อบอสแล้วเลือกจาก dropdown เพื่อดูข้อมูลธาตุและ race
+        พิมพ์ชื่อบอส หรือเลือก Stage แล้วกดชื่อบอส เพื่อดูธาตุ, race และธาตุที่ได้เปรียบ
       </p>
 
       {/* ─── Stage filter ───────────────────────────────────────────── */}
@@ -205,13 +224,18 @@ export default function BossLookup() {
           value={query}
           onChange={handleInputChange}
           onFocus={() => { if (query.trim()) setOpen(true) }}
+          onKeyDown={handleKeyDown}
           autoComplete="off"
+          role="combobox"
+          aria-expanded={open && suggestions.length > 0}
+          aria-label="ค้นหาบอส"
         />
         {query && (
           <button
             type="button"
             className="absolute right-2 top-2 p-0.5 text-muted-foreground hover:text-foreground"
             onClick={handleClear}
+            aria-label="ล้างการค้นหา"
           >
             <X className="size-4" />
           </button>
@@ -220,12 +244,14 @@ export default function BossLookup() {
         {/* Dropdown */}
         {open && suggestions.length > 0 && (
           <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-md overflow-hidden">
-            {suggestions.map((boss) => (
+            {suggestions.map((boss, i) => (
               <button
                 key={boss.id}
                 type="button"
-                className="flex w-full items-center justify-between gap-2 px-3 py-2 text-sm
-                  hover:bg-accent hover:text-accent-foreground text-left"
+                className={`flex w-full items-center justify-between gap-2 px-3 py-2 text-sm
+                  hover:bg-accent hover:text-accent-foreground text-left
+                  ${i === activeIndex ? 'bg-accent text-accent-foreground' : ''}`}
+                onPointerEnter={() => setActiveIndex(i)}
                 onPointerDown={(e) => { e.preventDefault(); handleSelect(boss) }}
               >
                 <span>{boss.name}</span>
@@ -243,6 +269,28 @@ export default function BossLookup() {
           </div>
         )}
       </div>
+
+      {/* ─── Browse by stage (ยังไม่ได้พิมพ์) ───────────────────────── */}
+      {!query.trim() && (
+        <div className="mt-4">
+          <p className="text-xs text-muted-foreground mb-2">
+            {filterLabel[String(stageFilter)]} · {stageBosses.length} ตัว — กดเพื่อดูข้อมูล
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {stageBosses.map((boss) => (
+              <button
+                key={boss.id}
+                type="button"
+                onClick={() => handleSelect(boss)}
+                className="inline-flex items-center gap-1.5 rounded-md border bg-background px-2 py-1 text-xs hover:bg-accent transition-colors"
+              >
+                <span className={`size-2 rounded-full border ${elementCls[boss.element]}`} />
+                {boss.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ─── Selected boss card ─────────────────────────────────────── */}
       {selected && (

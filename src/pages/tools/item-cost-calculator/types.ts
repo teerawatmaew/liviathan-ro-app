@@ -1,7 +1,9 @@
 // ─── Shared utility ────────────────────────────────────────────────────────────
 
-let _uid = 1
-export function nextId() { return _uid++ }
+/** id ถัดไปของรายการ — คิดจาก id สูงสุดในรายการ เพื่อไม่ชนกับรายการที่โหลดจาก localStorage */
+export function nextId(items: readonly { id: number }[]): number {
+  return items.reduce((max, item) => Math.max(max, item.id), 0) + 1
+}
 
 export function formatZeny(n: number): string {
   return n.toLocaleString('en-US') + 'z'

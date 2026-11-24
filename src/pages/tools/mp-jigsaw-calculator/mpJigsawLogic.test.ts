@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { calcBox, BOXES } from './mpJigsawLogic'
+import { calcBox, BOXES, getUpcomingBonuses } from './mpJigsawLogic'
 
 const [box1, box2, box3] = BOXES
 // box1: fromFirst100=31, levelPerBox=7, specialLevel=350, jigsawPerBox=2
@@ -90,5 +90,22 @@ describe('calcBox', () => {
       const r = calcBox(200, box)
       expect(r.fromFirst100).toBe(box.fromFirst100)
     }
+  })
+})
+
+describe('getUpcomingBonuses', () => {
+  it('ไม่รวมกล่องที่ไม่มีโบนัส (specialLevel = Infinity)', () => {
+    const r = getUpcomingBonuses(240)
+    expect(r.map((u) => u.label)).toEqual(['Box 1', 'Box 2', 'Box 3'])
+    expect(r.every((u) => Number.isFinite(u.remaining))).toBe(true)
+  })
+
+  it('คำนวณเวลที่เหลือ', () => {
+    expect(getUpcomingBonuses(240)[0].remaining).toBe(110)
+  })
+
+  it('ถึงโบนัสแล้วจะไม่แสดง', () => {
+    expect(getUpcomingBonuses(800).map((u) => u.label)).toEqual(['Box 3'])
+    expect(getUpcomingBonuses(1500)).toEqual([])
   })
 })

@@ -9,136 +9,93 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-
-interface SwitchBit {
-  index: number  // 7 = MSB, 0 = LSB
-  label: string  // SW8 .. SW1
-  value: 0 | 1
-}
-
-function decimalToBits(decimal: number): SwitchBit[] {
-  const clamped = Math.max(0, Math.min(255, Math.floor(decimal)))
-  return Array.from({ length: 8 }, (_, i) => {
-    const bit = 7 - i
-    return {
-      index: bit,
-      label: `SW${8 - i}`,
-      value: ((clamped >> bit) & 1) as 0 | 1,
-    }
-  })
-}
+import { cn } from '@/lib/utils'
+import { decimalToBits, parseSwitchInput, SWITCH_MAX, SWITCH_MIN } from './switchLogic'
 
 export default function SwitchDecoder() {
   const [inputValue, setInputValue] = useState('')
-  const [bits, setBits] = useState<SwitchBit[] | null>(null)
-
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const raw = e.target.value
-    if (raw === '') {
-      setInputValue('')
-      setBits(null)
-      return
-    }
-    const num = parseInt(raw, 10)
-    if (isNaN(num)) return
-    const clamped = Math.max(1, Math.min(255, num))
-    setInputValue(String(clamped))
-    setBits(decimalToBits(clamped))
-  }
-
-  function handleReset() {
-    setInputValue('')
-    setBits(null)
-  }
+  const parsed = parseSwitchInput(inputValue)
+  const bits = parsed.kind === 'ok' ? decimalToBits(parsed.value) : null
+  const onLabels = bits?.filter((b) => b.value === 1).map((b) => b.label) ?? []
 
   return (
-    <>
-      {/* Input Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">ป้อนค่าเลขฐาน 10</CardTitle>
-          <CardDescription>ค่าที่รองรับ: 1 – 255</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-3 items-end">
-            <div className="flex-1 space-y-1.5">
-              <Label htmlFor="decimal-input">Decimal Value</Label>
-              <Input
-                id="decimal-input"
-                type="number"
-                min={1}
-                max={255}
-                placeholder="เช่น 170"
-                value={inputValue}
-                onChange={handleChange}
-                onWheel={(e: React.WheelEvent<HTMLInputElement>) => e.currentTarget.blur()}
-              />
-            </div>
-            <Button type="button" variant="outline" onClick={handleReset}>
-              รีเซ็ต
-            </Button>
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">แปลงเลขเป็นสวิทช์</CardTitle>
+        <CardDescription>
+          กรอกเลขฐาน 10 ที่เห็นในเกม ({SWITCH_MIN} – {SWITCH_MAX}) แล้วดูว่าต้องเปิดสวิทช์ตัวไหน
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-5">
+        <div className="flex gap-3 items-end">
+          <div className="flex-1 space-y-1.5">
+            <Label htmlFor="decimal-input">เลขฐาน 10</Label>
+            <Input
+              id="decimal-input"
+              type="number"
+              inputMode="numeric"
+              min={SWITCH_MIN}
+              max={SWITCH_MAX}
+              placeholder="เช่น 170"
+              value={inputValue}
+              aria-invalid={parsed.kind === 'invalid'}
+              onChange={(e) => setInputValue(e.target.value)}
+              onWheel={(e) => e.currentTarget.blur()}
+            />
           </div>
-        </CardContent>
-      </Card>
+          <Button type="button" variant="outline" onClick={() => setInputValue('')} disabled={!inputValue}>
+            ล้าง
+          </Button>
+        </div>
+        {parsed.kind === 'invalid' && <p className="text-destructive text-sm -mt-3">{parsed.message}</p>}
 
-      {/* Switch Visualization */}
-      {bits && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">สถานะสวิทช์</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-8 gap-3">
+        {bits && (
+          <div className="space-y-3">
+            <div className="grid grid-cols-8 gap-1.5 sm:gap-3">
               {bits.map((bit) => (
-                <div key={bit.index} className="flex flex-col items-center gap-2">
+                <div key={bit.index} className="flex flex-col items-center gap-1.5">
                   <div
-                    className={`
-                      relative w-10 h-20 rounded-md border-2 flex flex-col justify-between
-                      py-1.5 items-center select-none
-                      ${bit.value === 1
-                        ? 'border-primary bg-primary/10'
-                        : 'border-border bg-muted/40'}
-                    `}
+                    className={cn(
+                      'relative w-full max-w-11 h-16 sm:h-20 rounded-md border-2 p-1 transition-colors',
+                      bit.value === 1 ? 'border-primary bg-primary/10' : 'border-border bg-muted/40',
+                    )}
+                    aria-label={`${bit.label} ${bit.value === 1 ? 'เปิด' : 'ปิด'}`}
                   >
-                    <span
-                      className={`text-[10px] font-bold leading-none
-                        ${bit.value === 1 ? 'text-primary' : 'text-muted-foreground/40'}`}
-                    >
-                      ON
-                    </span>
-
                     <div
-                      className={`
-                        absolute w-7 h-7 rounded-sm border transition-all duration-200
-                        ${bit.value === 1
-                          ? 'top-2 border-primary bg-primary text-primary-foreground'
-                          : 'bottom-2 border-border bg-background text-muted-foreground'}
-                        flex items-center justify-center text-[10px] font-bold
-                      `}
+                      className={cn(
+                        'absolute inset-x-1 h-[calc(50%-4px)] rounded-sm flex items-center justify-center text-xs font-bold transition-all duration-200',
+                        bit.value === 1
+                          ? 'top-1 bg-primary text-primary-foreground'
+                          : 'bottom-1 bg-background text-muted-foreground border',
+                      )}
                     >
-                      {bit.value}
+                      {bit.value === 1 ? 'ON' : 'OFF'}
                     </div>
-
-                    <span
-                      className={`text-[10px] font-bold leading-none
-                        ${bit.value === 0 ? 'text-foreground' : 'text-muted-foreground/40'}`}
-                    >
-                      OFF
-                    </span>
                   </div>
-
-                  <span className="text-xs font-medium text-muted-foreground">
+                  <span
+                    className={cn(
+                      'text-[11px] sm:text-xs font-medium',
+                      bit.value === 1 ? 'text-primary' : 'text-muted-foreground',
+                    )}
+                  >
                     {bit.label}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground/60">
-                    bit {bit.index}
                   </span>
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
-      )}
-    </>
+
+            <div className="rounded-md bg-muted/40 px-3 py-2 text-sm flex flex-wrap gap-x-4 gap-y-1">
+              <span>
+                <span className="text-muted-foreground">เปิด: </span>
+                <span className="font-medium">{onLabels.join(', ')}</span>
+              </span>
+              <span className="text-muted-foreground font-mono tabular-nums">
+                {bits.map((b) => b.value).join('')}
+              </span>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   )
 }

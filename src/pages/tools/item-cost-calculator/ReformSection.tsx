@@ -1,6 +1,5 @@
-import { useState } from 'react'
 import { useLocalStorage } from '@/hooks/use-local-storage'
-import { Plus, Trash2 } from 'lucide-react'
+import { Eraser, Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -20,21 +19,21 @@ const presetGroups = PRESET_ITEMS.reduce<Record<string, typeof PRESET_ITEMS>>(
 
 export default function ReformSection() {
   const [sdPriceRaw, setSdPriceRaw] = useLocalStorage('lro-reform-sdPrice', '')
-  const [items, setItems] = useState<CalcItem[]>([
-    { id: nextId(), category: 'enhancement', type: 'Armor', grade: 'Supreme', qty: 1 },
+  const [items, setItems] = useLocalStorage<CalcItem[]>('lro-reform-items', [
+    { id: 1, category: 'enhancement', type: 'Armor', grade: 'Supreme', qty: 1 },
   ])
 
   const sdPrice = Math.max(0, parseInt(sdPriceRaw) || 0)
 
   function addEnhancement() {
-    setItems(prev => [...prev, { id: nextId(), category: 'enhancement', type: 'Weapon', grade: 'Supreme', qty: 1 }])
+    setItems(prev => [...prev, { id: nextId(prev), category: 'enhancement', type: 'Weapon', grade: 'Supreme', qty: 1 }])
   }
   function addOther() {
-    setItems(prev => [...prev, { id: nextId(), category: 'other', name: '', price: 0, qty: 1 }])
+    setItems(prev => [...prev, { id: nextId(prev), category: 'other', name: '', price: 0, qty: 1 }])
   }
   function addPreset(preset: { name: string }) {
     const price = preset.name === 'Shadowdecon' ? sdPrice : 0
-    setItems(prev => [...prev, { id: nextId(), category: 'other', name: preset.name, price, qty: 1 }])
+    setItems(prev => [...prev, { id: nextId(prev), category: 'other', name: preset.name, price, qty: 1 }])
   }
   function removeItem(id: number) {
     setItems(prev => prev.filter(item => item.id !== id))
@@ -72,9 +71,9 @@ export default function ReformSection() {
     <>
       {/* Item List */}
       <Card>
-        <CardHeader className="pb-2 flex flex-row items-center justify-between">
+        <CardHeader className="pb-2 flex flex-row flex-wrap items-center justify-between gap-2">
           <CardTitle className="text-base">รายการ Item</CardTitle>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button size="sm" variant="outline" onClick={addEnhancement}>
               <Plus className="size-4 mr-1" />
               Enhancement Stone
@@ -83,6 +82,12 @@ export default function ReformSection() {
               <Plus className="size-4 mr-1" />
               Other
             </Button>
+            {items.length > 0 && (
+              <Button size="sm" variant="ghost" className="text-muted-foreground" onClick={() => setItems([])}>
+                <Eraser className="size-4 mr-1" />
+                ล้าง
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -223,7 +228,10 @@ export default function ReformSection() {
                 </div>
                 <div className="text-right shrink-0 min-w-28">
                   <p className="text-sm font-semibold">{formatZeny(cost)}</p>
-                  {item.qty > 1 && (
+                  {sdPrice === 0 && breakdown.shadowdecon > 0 && (
+                    <p className="text-xs text-amber-600 dark:text-amber-400">+ Shadowdecon × {breakdown.shadowdecon}</p>
+                  )}
+                  {item.qty > 1 && sdPrice > 0 && (
                     <p className="text-xs text-muted-foreground">{formatZeny(Math.round(cost / item.qty))}/ชิ้น</p>
                   )}
                 </div>
@@ -312,6 +320,12 @@ export default function ReformSection() {
                   <span className="text-primary">{formatZeny(grandTotal)}</span>
                 </div>
               </>
+            )}
+
+            {sdPrice === 0 && aggregate.shadowdecon > 0 && (
+              <p className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+                ยอดรวมยังไม่รวมค่า Shadowdecon {aggregate.shadowdecon.toLocaleString()} ชิ้น — กรอกราคา Shadowdecon ด้านบนเพื่อคำนวณครบ
+              </p>
             )}
           </CardContent>
         </Card>

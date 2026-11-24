@@ -22,6 +22,21 @@ export interface ChangelogEntry {
  */
 export const changelog: ChangelogEntry[] = [
   {
+    version: '0.7.0',
+    date: '2026-11-24',
+    changes: [
+      { type: 'fix', description: 'MP Jigsaw: แก้ "โบนัสพิเศษที่กำลังจะถึง" ที่แสดง "เวล ∞ / อีก ∞ เวล" สำหรับ Start Premium Jigsaw และ Bonus Jigsaw' },
+      { type: 'improve', description: 'MP Jigsaw: เพิ่มแถบความคืบหน้าไปยังโบนัสถัดไป, ข้อมูลอ้างอิงครบทุกกล่อง และตารางอ่านง่ายบนมือถือ' },
+      { type: 'feat', description: 'Central Lab: เลือก Stage แล้วเห็นรายชื่อบอสทันทีโดยไม่ต้องพิมพ์ และค้นหาบอสด้วยปุ่ม ↑ ↓ / Enter ได้' },
+      { type: 'improve', description: 'Central Lab: สวิทช์แสดงชัดบนมือถือพร้อมสรุปว่าต้องเปิดตัวไหน, แจ้งเตือนเมื่อกรอกค่านอกช่วง 1–255 แทนการปรับค่าเอง' },
+      { type: 'fix', description: 'Central Lab: Phase Timer นับเวลาตรงแม้สลับไปหน้าเกม, แสดงกรอบแดงเมื่อหมดเวลา และแสดง 3 phase ในแถวเดียวบนมือถือ' },
+      { type: 'improve', description: 'Central Lab: สีธาตุของบอสอ่านง่ายใน Light mode' },
+      { type: 'feat', description: 'Item Cost: จำรายการ Item ไว้หลังรีเฟรช พร้อมปุ่ม "ล้าง"' },
+      { type: 'improve', description: 'Item Cost: แจ้งเตือนเมื่อยอดรวมยังไม่รวมวัตถุดิบที่ไม่ได้ใส่ราคา (เช่น Shadowdecon)' },
+      { type: 'improve', description: 'มือถือ: header แสดงชื่อหน้าปัจจุบันไม่ถูกตัด และปุ่มสนับสนุนเหลือแค่ไอคอน' },
+    ],
+  },
+  {
     version: '0.6.2',
     date: '2026-11-24',
     changes: [

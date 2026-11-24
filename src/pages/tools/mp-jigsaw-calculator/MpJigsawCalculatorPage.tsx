@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { BOXES, calcBox } from './mpJigsawLogic'
+import { BOXES, calcBox, getUpcomingBonuses } from './mpJigsawLogic'
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
@@ -56,8 +56,10 @@ export default function MpJigsawCalculatorPage() {
               id="level-input"
               type="number"
               min={101}
+              inputMode="numeric"
               placeholder="เช่น 240"
               value={levelInput}
+              onWheel={(e) => e.currentTarget.blur()}
               onChange={(e) => setLevelInput(e.target.value)}
               className={isInvalid ? 'border-destructive focus-visible:ring-destructive' : ''}
             />
@@ -82,19 +84,19 @@ export default function MpJigsawCalculatorPage() {
                 <thead>
                   <tr className="text-muted-foreground border-b">
                     <th className="text-left pb-2 pr-4 font-medium">กล่อง</th>
-                    <th className="text-right pb-2 px-3 font-medium whitespace-nowrap">
+                    <th className="hidden sm:table-cell text-right pb-2 px-3 font-medium whitespace-nowrap">
                       100 เวลแรก
                     </th>
-                    <th className="text-right pb-2 px-3 font-medium whitespace-nowrap">
+                    <th className="hidden sm:table-cell text-right pb-2 px-3 font-medium whitespace-nowrap">
                       เกิน 100 เวล
                     </th>
-                    <th className="text-right pb-2 px-3 font-medium whitespace-nowrap">
-                      โบนัสพิเศษ
+                    <th className="text-right pb-2 px-2 sm:px-3 font-medium whitespace-nowrap">
+                      โบนัส
                     </th>
-                    <th className="text-right pb-2 px-3 font-medium whitespace-nowrap">
+                    <th className="text-right pb-2 px-2 sm:px-3 font-medium whitespace-nowrap">
                       รวมกล่อง
                     </th>
-                    <th className="text-right pb-2 px-3 font-medium whitespace-nowrap">
+                    <th className="hidden sm:table-cell text-right pb-2 px-3 font-medium whitespace-nowrap">
                       Jigsaw/กล่อง
                     </th>
                     <th className="text-right pb-2 pl-3 font-medium whitespace-nowrap">
@@ -116,8 +118,8 @@ export default function MpJigsawCalculatorPage() {
                           )}
                         </div>
                       </td>
-                      <td className="text-right py-3 px-3 tabular-nums">{row.fromFirst100}</td>
-                      <td className="text-right py-3 px-3 tabular-nums">{row.fromAbove100}</td>
+                      <td className="hidden sm:table-cell text-right py-3 px-3 tabular-nums">{row.fromFirst100}</td>
+                      <td className="hidden sm:table-cell text-right py-3 px-3 tabular-nums">{row.fromAbove100}</td>
                       <td className="text-right py-3 px-3 tabular-nums">
                         {row.fromBonus > 0 ? (
                           <span className="text-green-600 dark:text-green-400 font-medium">
@@ -130,7 +132,7 @@ export default function MpJigsawCalculatorPage() {
                       <td className="text-right py-3 px-3 tabular-nums font-semibold">
                         {row.totalBoxes}
                       </td>
-                      <td className="text-right py-3 px-3 tabular-nums text-muted-foreground">
+                      <td className="hidden sm:table-cell text-right py-3 px-3 tabular-nums text-muted-foreground">
                         ×{row.jigsawPerBox}
                       </td>
                       <td className="text-right py-3 pl-3 tabular-nums font-bold">
@@ -156,16 +158,24 @@ export default function MpJigsawCalculatorPage() {
         </Card>
       )}
 
-      {/* Info card */}
+      {/* Info card — สร้างจาก BOXES เพื่อไม่ให้ข้อความกับข้อมูลไม่ตรงกัน */}
       <Card className="bg-muted/40">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium">ข้อมูลอ้างอิง</CardTitle>
         </CardHeader>
-        <CardContent className="text-xs text-muted-foreground space-y-1">
-          <p>• Box 1 (สีน้ำตาล): ได้ 1 กล่องทุกๆ 7 เวล ที่เกิน 100 | โบนัส +30 กล่อง เมื่อถึงเวล 350</p>
-          <p>• Box 2 (สีน้ำเงิน): ได้ 1 กล่องทุกๆ 19 เวล ที่เกิน 100 | โบนัส +30 กล่อง เมื่อถึงเวล 800</p>
-          <p>• Box 3 (สีทอง): ได้ 1 กล่องทุกๆ 41 เวล ที่เกิน 100 | โบนัส +30 กล่อง เมื่อถึงเวล 1500</p>
-          <p>• Jigsaw ต่อกล่อง: Box 1 = 2 | Box 2 = 3 | Box 3 = 5</p>
+        <CardContent className="text-xs text-muted-foreground space-y-1.5">
+          {BOXES.map((box) => (
+            <p key={box.id} className="flex items-start gap-2">
+              <span className={`inline-block w-2.5 h-2.5 rounded-sm mt-0.5 shrink-0 ${box.color}`} />
+              <span>
+                <span className="font-medium text-foreground">{box.label}</span>
+                {' — '}ได้ {box.fromFirst100} กล่องจาก 100 เวลแรก
+                {Number.isFinite(box.levelPerBox) && <>, +1 กล่องทุก {box.levelPerBox} เวลที่เกิน 100</>}
+                {Number.isFinite(box.specialLevel) && <>, โบนัส +30 กล่องที่เวล {box.specialLevel.toLocaleString()}</>}
+                {' · '}{box.jigsawPerBox} Jigsaw/กล่อง
+              </span>
+            </p>
+          ))}
         </CardContent>
       </Card>
     </div>
@@ -175,23 +185,35 @@ export default function MpJigsawCalculatorPage() {
 // ─── Helper: upcoming bonus hint ─────────────────────────────────────────────
 
 function UpcomingBonusHint({ level }: { level: number }) {
-  const upcoming = BOXES.filter((box) => level < box.specialLevel).map((box) => ({
-    label: box.label,
-    specialLevel: box.specialLevel,
-    remaining: box.specialLevel - level,
-  }))
+  const upcoming = getUpcomingBonuses(level)
 
-  if (upcoming.length === 0) return null
+  if (upcoming.length === 0) {
+    return (
+      <p className="rounded-md border border-dashed p-3 text-xs text-muted-foreground">
+        ได้รับโบนัสพิเศษครบทุกกล่องแล้ว 🎉
+      </p>
+    )
+  }
 
   return (
-    <div className="rounded-md border border-dashed p-3 space-y-1">
+    <div className="rounded-md border border-dashed p-3 space-y-2.5">
       <p className="text-xs font-medium text-muted-foreground">โบนัสพิเศษที่กำลังจะถึง</p>
-      {upcoming.map((u) => (
-        <p key={u.label} className="text-xs">
-          {u.label}: เวล {u.specialLevel.toLocaleString()} (+30 กล่อง) —{' '}
-          <span className="font-medium">อีก {u.remaining.toLocaleString()} เวล</span>
-        </p>
-      ))}
+      {upcoming.map((u) => {
+        const pct = Math.min(100, Math.max(0, ((level - 100) / (u.specialLevel - 100)) * 100))
+        return (
+          <div key={u.label} className="space-y-1">
+            <div className="flex justify-between gap-2 text-xs">
+              <span>
+                {u.label}: เวล {u.specialLevel.toLocaleString()} (+{u.bonusBoxes} กล่อง)
+              </span>
+              <span className="font-medium tabular-nums whitespace-nowrap">อีก {u.remaining.toLocaleString()} เวล</span>
+            </div>
+            <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+              <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 }

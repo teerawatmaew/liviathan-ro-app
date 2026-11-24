@@ -63,3 +63,20 @@ export function calcBox(level: number, box: BoxConfig): BoxResult {
   const totalJigsaw = totalBoxes * box.jigsawPerBox
   return { fromFirst100: box.fromFirst100, fromAbove100, fromBonus, totalBoxes, totalJigsaw }
 }
+
+export interface UpcomingBonus {
+  label: string
+  specialLevel: number
+  remaining: number
+  bonusBoxes: number
+}
+
+/** โบนัสพิเศษ (+30 กล่อง) ที่ยังไม่ถึง — ข้ามกล่องที่ไม่มีโบนัส (specialLevel = Infinity) */
+export function getUpcomingBonuses(level: number): UpcomingBonus[] {
+  return BOXES.filter((box) => Number.isFinite(box.specialLevel) && level < box.specialLevel).map((box) => ({
+    label: box.label,
+    specialLevel: box.specialLevel,
+    remaining: box.specialLevel - level,
+    bonusBoxes: 30,
+  }))
+}

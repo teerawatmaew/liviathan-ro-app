@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   calcBreakdown,
+  nextId,
   calcReformTotal,
   calcGradeItemCost,
   formatZeny,
@@ -170,5 +171,15 @@ describe('calcGradeItemCost', () => {
     const { total, npcZeny, materialLines } = calcGradeItemCost('Etel Topaz', 1, prices, false)
     const materialTotal = materialLines.reduce((s, l) => s + l.subtotal, 0)
     expect(materialTotal).toBe(total - npcZeny)
+  })
+})
+
+describe('nextId', () => {
+  it('รายการว่าง → 1', () => {
+    expect(nextId([])).toBe(1)
+  })
+
+  it('ต่อจาก id สูงสุด (ไม่ชนกับรายการที่โหลดจาก localStorage)', () => {
+    expect(nextId([{ id: 3 }, { id: 7 }, { id: 2 }])).toBe(8)
   })
 })

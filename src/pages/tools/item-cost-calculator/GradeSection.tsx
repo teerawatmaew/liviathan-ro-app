@@ -1,6 +1,5 @@
-import { useState } from 'react'
 import { useLocalStorage } from '@/hooks/use-local-storage'
-import { Plus, Trash2 } from 'lucide-react'
+import { Eraser, Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -9,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator'
 import {
   type GradeCalcItem, type GradeMaterial, type GradeRecipeName, type GradeMaterialPrices,
-  GRADE_MATERIAL_INPUTS, GRADE_RECIPE_NAMES,
+  GRADE_MATERIAL_INPUTS, GRADE_RECIPE_NAMES, GRADE_RECIPES,
   calcGradeItemCost, formatZeny, nextId,
 } from './types'
 
@@ -19,15 +18,17 @@ export default function GradeSection() {
     Object.fromEntries(GRADE_MATERIAL_INPUTS.map(m => [m.key, ''])) as GradeMaterialPrices,
   )
   const [calcEtelFromDust, setCalcEtelFromDust] = useLocalStorage('lro-grade-calcEtelFromDust', false)
-  const [gradeItems, setGradeItems] = useState<GradeCalcItem[]>([
-    { id: nextId(), recipe: 'Etel Stone', qty: 1 },
+  const [storedGradeItems, setGradeItems] = useLocalStorage<GradeCalcItem[]>('lro-grade-items', [
+    { id: 1, recipe: 'Etel Stone', qty: 1 },
   ])
+  // ค่าจาก localStorage อาจเป็นสูตรที่ถูกถอดออกไปแล้ว — กรองทิ้งก่อนคำนวณ
+  const gradeItems = storedGradeItems.filter(i => i.recipe in GRADE_RECIPES)
 
   function setGradePrice(key: GradeMaterial, val: string) {
     setGradePrices(prev => ({ ...prev, [key]: val }))
   }
   function addGradeItem() {
-    setGradeItems(prev => [...prev, { id: nextId(), recipe: 'Etel Stone', qty: 1 }])
+    setGradeItems(prev => [...prev, { id: nextId(prev), recipe: 'Etel Stone', qty: 1 }])
   }
   function removeGradeItem(id: number) {
     setGradeItems(prev => prev.filter(i => i.id !== id))
@@ -40,6 +41,14 @@ export default function GradeSection() {
     const { total } = calcGradeItemCost(item.recipe, item.qty, gradePrices, calcEtelFromDust)
     return sum + total
   }, 0)
+
+  // วัตถุดิบที่ยังไม่ได้ใส่ราคา (ไม่ถูกรวมในยอด)
+  const unpriced = new Map<string, number>()
+  for (const item of gradeItems) {
+    for (const line of calcGradeItemCost(item.recipe, item.qty, gradePrices, calcEtelFromDust).materialLines) {
+      if (line.unitPrice === 0) unpriced.set(line.label, (unpriced.get(line.label) ?? 0) + line.qty)
+    }
+  }
 
   return (
     <>
@@ -122,12 +131,20 @@ export default function GradeSection() {
 
       {/* Grade Item List */}
       <Card>
-        <CardHeader className="pb-2 flex flex-row items-center justify-between">
+        <CardHeader className="pb-2 flex flex-row flex-wrap items-center justify-between gap-2">
           <CardTitle className="text-base">รายการ Item</CardTitle>
-          <Button size="sm" variant="outline" onClick={addGradeItem}>
-            <Plus className="size-4 mr-1" />
-            เพิ่ม Item
-          </Button>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" onClick={addGradeItem}>
+              <Plus className="size-4 mr-1" />
+              เพิ่ม Item
+            </Button>
+            {gradeItems.length > 0 && (
+              <Button size="sm" variant="ghost" className="text-muted-foreground" onClick={() => setGradeItems([])}>
+                <Eraser className="size-4 mr-1" />
+                ล้าง
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-3">
           {gradeItems.length === 0 && (
@@ -217,6 +234,13 @@ export default function GradeSection() {
                   <span className="text-primary">{formatZeny(gradeGrandTotal)}</span>
                 </div>
               </>
+            )}
+
+            {unpriced.size > 0 && (
+              <p className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+                ยอดรวมยังไม่รวมวัตถุดิบที่ไม่ได้ใส่ราคา:{' '}
+                {[...unpriced].map(([label, qty]) => `${label} × ${qty.toLocaleString()}`).join(', ')}
+              </p>
             )}
           </CardContent>
         </Card>

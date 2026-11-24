@@ -18,9 +18,10 @@ export default function DonateButton() {
         variant="outline"
         className="gap-1.5 text-xs border-pink-500/40 text-pink-400 hover:bg-pink-500/10 hover:text-pink-300 hover:border-pink-400"
         onClick={() => setOpen(true)}
+        aria-label="สนับสนุนผู้พัฒนา"
       >
         <Heart className="size-3.5 fill-pink-500 text-pink-500" />
-        สนับสนุนผู้พัฒนา
+        <span className="hidden sm:inline">สนับสนุนผู้พัฒนา</span>
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>

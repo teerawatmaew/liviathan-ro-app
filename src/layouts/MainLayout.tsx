@@ -72,6 +72,8 @@ export default function MainLayout() {
   const location = useLocation()
   const [theme, toggleTheme] = useTheme()
   const pageTitle = PAGE_LABELS[location.pathname] ?? null
+  // มือถือ: แสดงเฉพาะชื่อหน้า (ซ่อน root crumb) เพื่อไม่ให้ชื่อหน้าโดนตัด
+  const showPageTitle = location.pathname !== PATHS.HOME && pageTitle !== null
   return (
     <SidebarProvider>
       <Sidebar>
@@ -170,12 +172,12 @@ export default function MainLayout() {
           <SidebarTrigger />
           <div className="w-px h-4 bg-border" />
           <div className="flex items-center gap-1.5 min-w-0">
-            <span className={`text-sm shrink-0 ${location.pathname !== PATHS.HOME && pageTitle ? 'text-muted-foreground/60' : 'font-medium'}`}>
+            <span className={`text-sm shrink-0 ${showPageTitle ? 'hidden sm:inline text-muted-foreground/60' : 'font-medium'}`}>
               LiviathaN RO
             </span>
-            {location.pathname !== PATHS.HOME && pageTitle && (
+            {showPageTitle && (
               <>
-                <ChevronRight className="size-3 text-muted-foreground/40 shrink-0" />
+                <ChevronRight className="hidden sm:block size-3 text-muted-foreground/40 shrink-0" />
                 <span className="text-sm font-medium truncate">{pageTitle}</span>
               </>
             )}
