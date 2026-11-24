@@ -13,6 +13,9 @@
 1. **Team decisions (Sage)** — `agents/sage/index.md` → `<domain>/index.md` → `rules.md` / `decisions/<slug>.md`
    - `app` — routing/pages, data layer, localStorage, release/changelog, theming
    - `refine` — กติกา refine, ตาราง rate, BSB, event / Rate Up items, pity
+   - `item-cost` — Enhancement Stone grade chain, Shadowdecon, Etel recipes, เตือนราคาที่ยังไม่กรอก
+   - `mp-jigsaw` — สูตรกล่อง Jigsaw, โบนัสพิเศษ, ค่า `Infinity`
+   - `central-lab` — ลำดับ bit ของสวิทช์, phase timer, ข้อมูลบอส
    อ่าน `index.md` ของ domain ที่เกี่ยวข้องก่อนแก้โค้ดในส่วนนั้น และทำตาม `enforcement` (`block` > `warn` > `advise`)
 2. **โครงสร้างโปรเจกต์ + ขั้นตอนเพิ่มหน้า/ข้อมูล** — `.github/copilot-instructions.md`
 3. **บันทึกแต่ละ session** — `docs/dev-session-*.md`

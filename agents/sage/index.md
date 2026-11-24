@@ -80,6 +80,9 @@ Edit a file, commit, done — the agent follows your team's version.
 
 - [app](app/) - LiviathaN RO app conventions: routing/pages, data layer, state persistence, release/changelog, theming.
 - [refine](refine/) - Ragnarok refine rules simulated by Refine Simulator: rate tables, fail outcomes, BSB, event/Rate Up items, pity.
+- [item-cost](item-cost/) - Item Cost Calculator: Enhancement Stone grade chain, Shadowdecon, Etel recipes, unpriced-material warnings.
+- [mp-jigsaw](mp-jigsaw/) - MP Jigsaw Calculator: box formula, special level bonus, Infinity sentinel.
+- [central-lab](central-lab/) - Central Lab Helper: switch bit order, phase timers, boss data and element lookup.
 
 - [sage-product](sage-product/) - Sage product architecture, Project DNA, and cognition data governance.
 - [protocol](protocol/) - Sage cognition policy, risk controls, and cross-command contracts.
