@@ -2,6 +2,8 @@
 
 > ไฟล์นี้เป็น **แหล่งความรู้กลาง** สำหรับ AI agents (GitHub Copilot, Claude ฯลฯ) และ developer ทุกคน
 > อ่านให้ครบก่อนพัฒนาหรือเพิ่มฟีเจอร์ใหม่
+>
+> กฎ/decision ที่ agent ต้องทำตาม (Sage) อยู่ที่ [`agents/sage/`](../agents/sage/index.md) — domain `app` และ `refine`
 
 ---
 
@@ -366,6 +368,8 @@ import { myData } from '@/data/monsters'
 /tools/item-cost-calculator ItemCostCalculatorPage
 /tools/mp-jigsaw-calculator MpJigsawCalculatorPage
 /tools/refine-simulator     RefineSimulatorPage
+/tools/zeny-calculator      ZenyCalculatorPage
+/changelog                  ChangelogPage
 /coming-soon                ComingSoonPage
 *                           NotFoundPage (404)
 ```
