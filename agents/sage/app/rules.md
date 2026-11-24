@@ -40,7 +40,7 @@ React 19 · react-router-dom v7 (`createBrowserRouter`) · Vite 8 · TypeScript 
 
 ## Rules
 
-1. ข้อความ UI เป็นภาษาไทย (ชื่อไอเทม/แร่ในเกมคงชื่ออังกฤษตามเกม) — ไม่มี i18n library
+1. **ภาษาไทยเป็นหลัก** ทั้งการตอบ, UI, changelog, docs, knowledge, comment — ดู `decisions/thai-first-language.md` (approved · block) · ไม่มี i18n library
 2. คำนวณด้วย `useMemo` / derive ตอน render — ห้ามใช้ `useEffect` เพื่อ sync ผลคำนวณ
 3. logic เกม (สูตร, การสุ่ม) อยู่ในไฟล์ `.ts` pure function มี `*.test.ts` ข้างกัน
 4. ติดตั้ง shadcn component ใหม่ด้วย `npx shadcn@latest add <x>` แล้วย้ายไฟล์จากโฟลเดอร์ `@/` ที่สร้างผิดที่เข้า `src/components/ui/` (alias ทำให้ CLI วางผิด)

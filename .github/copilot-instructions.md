@@ -3,6 +3,9 @@
 > ไฟล์นี้เป็น **แหล่งความรู้กลาง** สำหรับ AI agents (GitHub Copilot, Claude ฯลฯ) และ developer ทุกคน
 > อ่านให้ครบก่อนพัฒนาหรือเพิ่มฟีเจอร์ใหม่
 >
+> **ภาษา:** ใช้ภาษาไทยเป็นหลัก (ตอบ, UI, changelog, docs, comment) — โค้ดและชื่อไอเทมในเกมคงอังกฤษ
+> ดู [`agents/sage/app/decisions/thai-first-language.md`](../agents/sage/app/decisions/thai-first-language.md)
+>
 > กฎ/decision ที่ agent ต้องทำตาม (Sage) อยู่ที่ [`agents/sage/`](../agents/sage/index.md) — domain `app` และ `refine`
 
 ---
@@ -386,15 +389,18 @@ Sidebar ใน `MainLayout.tsx` แบ่งเป็น section:
 | Section label | เมนู |
 |---|---|
 | (ไม่มี label) | หน้าหลัก |
-| คอนเทนต์ | บทความ / คู่มือ, แกลเลอรี่ |
-| เครื่องมือ | คำนวณ Damage, Central Lab Helper, Item Cost Calculator, MP Jigsaw Calculator, Refine Simulator |
+| คอนเทนต์ | บทความ / คู่มือ, แกลเลอรี่, Changelog |
+| เครื่องมือ | คำนวณ Damage, Central Lab Helper, Item Cost Calculator, MP Jigsaw Calculator, Refine Simulator, Zeny → Baht |
 | (ท้าย sidebar) | Coming Soon |
+
+> `StatCalculatorPage` (`/tools/stat`) มี route แต่ไม่อยู่ใน sidebar — breadcrumb label มาจาก `PAGE_LABELS` ใน `MainLayout.tsx`
+> (สร้างจาก `navSections` อัตโนมัติ; หน้าที่ไม่อยู่ใน sidebar ต้องเพิ่ม label ใน `PAGE_LABELS` เอง)
 
 เมื่อเพิ่มเมนูใหม่ให้เลือก section ที่เหมาะสม หรือสร้าง section ใหม่ถ้าหมวดหมู่ต่างออกไป
 
 ---
 
-## 9. Existing Features (ณ พ.ค. 2026)
+## 9. Existing Features (ณ พ.ย. 2026, v0.6.2)
 
 | หน้า | Path | คำอธิบาย |
 |---|---|---|
@@ -406,7 +412,9 @@ Sidebar ใน `MainLayout.tsx` แบ่งเป็น section:
 | CentralLabHelperPage | `/tools/central-lab-helper` | แปลงเลขฐาน 10 → bit switch (SW1–SW8) + Boss Lookup + Countdown Timer |
 | ItemCostCalculatorPage | `/tools/item-cost-calculator` | คำนวณ Zeny / วัตถุดิบในการ Enhancement (Reform & Grade) |
 | MpJigsawCalculatorPage | `/tools/mp-jigsaw-calculator` | คำนวณจำนวน Jigsaw ที่ได้จาก Mystical Pass ตามเลเวลปัจจุบัน |
-| RefineSimulatorPage | `/tools/refine-simulator` | จำลองการ refine อาวุธ/เกราะ — แสดงอัตราสำเร็จ, BSB cost, สถิติ |
+| RefineSimulatorPage | `/tools/refine-simulator` | จำลองการ refine อาวุธ/เกราะ/shadow + event items (pity, Rate Up) — อัตราสำเร็จ, BSB, แร่, Zeny, สถิติ |
+| ZenyCalculatorPage | `/tools/zeny-calculator` | แปลง Zeny ↔ บาท ตามอัตราตลาดที่ผู้ใช้กรอก |
+| ChangelogPage | `/changelog` | ประวัติเวอร์ชันจาก `src/data/changelog.ts` |
 | ComingSoonPage | `/coming-soon` | placeholder สำหรับ feature ที่กำลังพัฒนา |
 | NotFoundPage | `*` | 404 — URL ไม่พบ |
 | ErrorPage | errorElement | runtime error fallback (React Router) |
@@ -481,6 +489,9 @@ pnpm run preview  # Preview production build
 - `ui` chunk: ~15 kB (Radix + Lucide)
 - แต่ละ page: 0.5–6 kB (lazy loaded แยกกัน)
 
-**ยังต้องทำก่อน fully production:**
-- เพิ่ม `og:image` + `apple-touch-icon.png` (รอ domain จริง)
-- เพิ่ม `sitemap.xml` (รอ domain จริง)
+**SEO / social (`index.html`):** มี `og:image` (`public/og-image.png` 1200×630, template ที่ `scripts/og-image-template.html`),
+Twitter card `summary_large_image`, `robots.txt` — ใช้ URL `https://liviathan-ro-app.vercel.app`
+
+**ยังต้องทำ:**
+- `apple-touch-icon` ยังชี้ไป `/favicon.svg` (iOS ต้องการ PNG 180×180)
+- เพิ่ม `sitemap.xml`

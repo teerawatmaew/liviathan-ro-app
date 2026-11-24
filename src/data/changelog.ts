@@ -22,6 +22,13 @@ export interface ChangelogEntry {
  */
 export const changelog: ChangelogEntry[] = [
   {
+    version: '0.6.2',
+    date: '2026-11-24',
+    changes: [
+      { type: 'fix', description: 'แก้ไขปุ่มสลับ Dark / Light ให้สีของปุ่ม, badge, ช่องกรอก และหน้า MP Jigsaw เปลี่ยนตามธีมที่เลือก แทนการเปลี่ยนตามธีมของระบบปฏิบัติการ' },
+    ],
+  },
+  {
     version: '0.6.1',
     date: '2026-06-17',
     changes: [

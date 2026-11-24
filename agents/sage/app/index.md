@@ -5,6 +5,7 @@
 
 | Entry | Status | Enforcement |
 | --- | --- | --- |
+| `decisions/thai-first-language.md` — **ใช้ภาษาไทยเป็นหลัก** (ตอบ, UI, changelog, docs, knowledge, comment, commit body); โค้ด/ชื่อไอเทมในเกมคงอังกฤษ | approved | block |
 | `rules.md` — stack, layout, reusable assets, กฎหลัก | proposed | — |
 | `decisions/add-page-four-touchpoints.md` — เพิ่มหน้าใหม่ต้องแตะ 4 ที่: `paths.ts` → page → `lazy-pages.tsx` + `routes/index.tsx` → `MainLayout.tsx` | proposed | warn |
 | `decisions/release-bumps-version-and-changelog.md` — ทุก release: bump `package.json` + entry ใหม่หัว `src/data/changelog.ts` + conventional commit | proposed | warn |
