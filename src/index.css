@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* dark: utilities follow the .dark class set by useTheme(), not the OS preference */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   :root {
     --background: oklch(1 0 0);
